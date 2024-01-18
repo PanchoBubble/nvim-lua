@@ -1,3 +1,9 @@
+vim.api.nvim_create_user_command("Cppath", function()
+    local path = vim.fn.expand("%")
+    vim.fn.setreg("+", path)
+    vim.notify('Copied "' .. path .. '" to the clipboard!')
+end, {})
+
 vim.g.mapleader = " "
 vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
 
@@ -11,10 +17,10 @@ vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 
 vim.keymap.set("n", "<leader>vwm", function()
-  require("vim-with-me").StartVimWithMe()
+    require("vim-with-me").StartVimWithMe()
 end)
 vim.keymap.set("n", "<leader>svwm", function()
-  require("vim-with-me").StopVimWithMe()
+    require("vim-with-me").StopVimWithMe()
 end)
 
 -- greatest remap ever
@@ -42,7 +48,7 @@ vim.keymap.set("n", "<leader>N", "<cmd>NvimTreeFindFile<CR>")
 
 vim.keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<CR>")
 vim.keymap.set("n", "<leader>fw", function()
-  return "<cmd>Telescope live_grep default_text=" .. vim.fn.expand("<cword>") .. "<CR>"
+    return "<cmd>Telescope live_grep default_text=" .. vim.fn.expand("<cword>") .. "<CR>"
 end, { expr = true })
 
 vim.keymap.set("n", "<C-p>", "<cmd>Telescope find_files<CR>")
@@ -75,42 +81,7 @@ vim.keymap.set("x", "<S-DOWN>", ":m'>+<CR>gv=gv")
 vim.keymap.set("n", "gt", "<cmd>tabnext<CR>")
 vim.keymap.set("n", "gT", "<cmd>tabprevious<CR>")
 
--- COC
-vim.keymap.set("n", "gd", "<cmd><Plug>(coc-definition)<CR>")
-vim.keymap.set("n", "gy", "<cmd><Plug>(coc-type-definition)<CR>")
-vim.keymap.set("n", "gi", "<cmd><Plug>(coc-implementation)<CR>")
-vim.keymap.set("n", "gr", "<cmd><Plug>(coc-references)<CR>")
-
-vim.keymap.set("n", "<leader>qf", "<Plug>(coc-fix-current)<CR>")
-
 vim.keymap.set("n", "<leader>rn", "<Plug>(coc-rename)")
 
--- COC AUTOCOMPLETE
-local function check_back_space()
-  local col = vim.fn.col(".") - 1
-  return col == 0 or vim.fn.getline("."):sub(col, col):match("%s") ~= nil
-end
-
-local opts = { silent = true, noremap = true, expr = true, replace_keycodes = false }
-
-vim.keymap.set("i", "<Tab>", function()
-  if vim.fn["coc#pum#visible"]() == 1 then
-    return vim.fn["coc#pum#next"](1)
-  end
-  if check_back_space() then
-    return vim.fn["coc#refresh"]()
-  end
-  return "<Tab>"
-end, opts)
-vim.keymap.set("i", "<S-Tab>", function()
-  if vim.fn["coc#pum#visible"]() == 1 then
-    return vim.fn["coc#pum#prev"](1)
-  end
-  return "<S-Tab>"
-end, opts)
-vim.keymap.set("i", "<CR>", function()
-  if vim.fn["coc#pum#visible"]() == 1 then
-    return vim.fn["coc#pum#confirm"]()
-  end
-  return "\r"
-end, opts)
+vim.keymap.set('n', '<leader>qf', "<cmd>lua vim.lsp.buf.code_action()<CR>")
+vim.keymap.set('n', '<leader><leader>', "<cmd>EslintFixAll<CR>")
