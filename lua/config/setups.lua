@@ -1,4 +1,4 @@
- -- LAZY PLUGINS
+-- LAZY PLUGINS
 local plugins = require('config.plugins')
 require("lazy").setup(plugins)
 
@@ -36,7 +36,6 @@ require('mason-lspconfig').setup({
         'tsserver',
         'eslint',
         'html',
-        'stylua',
         'cssls'
     },
     handlers = {
@@ -62,12 +61,36 @@ require('mason-lspconfig').setup({
     }
 })
 
-local function change_nvim_tree_dir()
-	local nvim_tree = require("nvim-tree")
-	nvim_tree.change_dir(vim.fn.getcwd())
-end
+-- SESSION
 require('auto-session').setup {
     auto_session_enable_last_session = vim.loop.cwd() == vim.loop.os_homedir(),
-    post_restore_cmds = { change_nvim_tree_dir, "NvimTreeOpen" },
-	pre_save_cmds = { "NvimTreeClose" },
+    post_restore_cmds = { "NvimTreeFindFile" },
+    pre_save_cmds = { "NvimTreeClose" },
 }
+-- NVIM TREE
+require("nvim-tree").setup({
+    view = { adaptive_size = true },
+})
+
+-- TreeSitter
+require('nvim-treesitter').setup({
+    rainbow = { enable = true },
+    highlight = { enable = true },
+    indent = { enable = true },
+    ensure_installed = {
+        "bash",
+        "html",
+        "javascript",
+        "json",
+        "graphql",
+        "markdown",
+        "markdown_inline",
+        "python",
+        "query",
+        "regex",
+        "tsx",
+        "typescript",
+        "vim",
+        "yaml",
+    },
+})

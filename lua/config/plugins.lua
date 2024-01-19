@@ -10,10 +10,15 @@ return {
     -- NvimTree
     {
         "nvim-tree/nvim-tree.lua",
-        opts = {}, -- passed into config()
         config = function()
-            require("nvim-tree").setup({ view = { adaptive_size = true } })
-            -- other code you want to run with setting up nvim-tree
+            require("nvim-tree").setup({
+                view = { adaptive_size = true },
+                filesystem_watchers = {
+                    enable = true,
+                    debounce_delay = 50,
+                    ignore_dirs = { "node_modules" },
+                },
+            })
         end,
     },
     -- LSP Support
@@ -44,57 +49,25 @@ return {
     { "neovim/nvim-lspconfig" },
 
     -- add more treesitter parsers
-    {
-        "nvim-treesitter/nvim-treesitter",
-        opts = {
-            ensure_installed = {
-                "bash",
-                "html",
-                "javascript",
-                "json",
-                "lua",
-                "markdown",
-                "markdown_inline",
-                "python",
-                "query",
-                "regex",
-                "tsx",
-                "typescript",
-                "vim",
-                "yaml",
-            },
-        },
-    },
-
-    -- since `vim.tbl_deep_extend`, can only merge tables and not lists, the code above
-    -- would overwrite `ensure_installed` with the new value.
-    -- If you'd rather extend the default config, use the code below instead:
-    {
-        "nvim-treesitter/nvim-treesitter",
-        opts = function(_, opts)
-            -- add tsx and treesitter
-            vim.list_extend(opts.ensure_installed, {
-                "tsx",
-                "typescript",
-            })
-        end,
-    },
+    { "nvim-treesitter/nvim-treesitter" },
 
     -- Noice
     -- lazy.nvim
     {
-      "folke/noice.nvim",
-      event = "VeryLazy",
-      opts = {
-        -- add any options here
-      },
-      dependencies = {
-        -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
-        "MunifTanjim/nui.nvim",
-        -- OPTIONAL:
-        --   `nvim-notify` is only needed, if you want to use the notification view.
-        --   If not available, we use `mini` as the fallback
-        "rcarriga/nvim-notify",
+        "folke/noice.nvim",
+        event = "VeryLazy",
+        opts = {
+            -- add any options here
+        },
+        dependencies = {
+            -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+            "MunifTanjim/nui.nvim",
+            -- OPTIONAL:
+            --   `nvim-notify` is only needed, if you want to use the notification view.
+            --   If not available, we use `mini` as the fallback
+            "rcarriga/nvim-notify",
         }
-    }
+    },
+
+    { "HiPhish/nvim-ts-rainbow2" },
 }

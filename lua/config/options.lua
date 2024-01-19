@@ -31,27 +31,27 @@ vim.opt.updatetime = 50
 vim.opt.colorcolumn = "80"
 
 -- Give more space for displaying messages.
-vim.opt. cmdheight=2
+vim.opt.cmdheight = 2
 
 -- Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
 -- delays and poor user experience.
-vim.opt.updatetime=50
+vim.opt.updatetime = 50
 
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1-- set termguicolors to enable highlight groups
+vim.g.loaded_netrwPlugin = 1 -- set termguicolors to enable highlight groups
 
 
-vim.opt.termguicolors = true-- empty setup using defaults
+vim.opt.termguicolors = true -- empty setup using defaults
 
 require("nvim-tree").setup({
     view = { adaptive_size = true }
 })
 
 require('nvim-treesitter.configs').setup {
-  highlight = {
-    enabled = true
-  }
+    highlight = {
+        enabled = true
+    }
 }
 
 vim.opt.hidden = true
@@ -68,4 +68,4 @@ vim.opt.mouse = 'a'
 vim.cmd('colorscheme rose-pine')
 vim.g.blamer_enabled = true
 
-vim.o.sessionoptions="blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"

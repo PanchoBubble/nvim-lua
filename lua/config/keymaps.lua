@@ -84,6 +84,8 @@ vim.keymap.set("n", "gT", "<cmd>tabprevious<CR>")
 vim.keymap.set("n", "<leader>rn", "<Plug>(coc-rename)")
 
 vim.keymap.set('n', '<leader>qf', "<cmd>lua vim.lsp.buf.code_action()<CR>")
-vim.keymap.set('n', '<leader><leader>', "<cmd>EslintFixAll<CR>")
+-- vim.keymap.set('n', '<leader><leader>', "<cmd>EslintFixAll<CR>")
+vim.keymap.set('n', '<leader><leader>', vim.lsp.buf.format)
+
 
 vim.keymap.set('n', '<leader>', "<cmd>SessionRestore<CR>")
