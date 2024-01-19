@@ -79,7 +79,7 @@ require("nvim-tree").setup({
 
 -- TreeSitter
 require('nvim-treesitter.configs').setup({
-    rainbow = { enable = true },
+    -- rainbow = { enable = true },
     highlight = { enable = true },
     indent = { enable = true },
     ensure_installed = {
@@ -93,7 +93,7 @@ require('nvim-treesitter.configs').setup({
         "python",
         "query",
         "regex",
-        "tsx",
+        -- "tsx",
         "typescript",
         "vim",
         "yaml",

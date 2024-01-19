@@ -53,7 +53,4 @@ return {
             "rcarriga/nvim-notify",
         }
     },
-
-    -- Rainbow brackets
-    { "HiPhish/nvim-ts-rainbow2" },
 }
