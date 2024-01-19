@@ -70,10 +70,15 @@ require('auto-session').setup {
 -- NVIM TREE
 require("nvim-tree").setup({
     view = { adaptive_size = true },
+    filesystem_watchers = {
+        enable = true,
+        debounce_delay = 50,
+        ignore_dirs = { "node_modules" },
+    },
 })
 
 -- TreeSitter
-require('nvim-treesitter').setup({
+require('nvim-treesitter.configs').setup({
     rainbow = { enable = true },
     highlight = { enable = true },
     indent = { enable = true },

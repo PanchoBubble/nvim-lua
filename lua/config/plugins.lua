@@ -8,23 +8,9 @@ return {
     -- Session
     { 'rmagatti/auto-session' },
     -- NvimTree
-    {
-        "nvim-tree/nvim-tree.lua",
-        config = function()
-            require("nvim-tree").setup({
-                view = { adaptive_size = true },
-                filesystem_watchers = {
-                    enable = true,
-                    debounce_delay = 50,
-                    ignore_dirs = { "node_modules" },
-                },
-            })
-        end,
-    },
+    { "nvim-tree/nvim-tree.lua" },
     -- LSP Support
     { 'neovim/nvim-lspconfig' },
-    { 'williamboman/mason.nvim' },
-    { 'williamboman/mason-lspconfig.nvim' },
 
     -- Autocompletion
     { 'hrsh7th/nvim-cmp' },
@@ -52,13 +38,9 @@ return {
     { "nvim-treesitter/nvim-treesitter" },
 
     -- Noice
-    -- lazy.nvim
     {
         "folke/noice.nvim",
         event = "VeryLazy",
-        opts = {
-            -- add any options here
-        },
         dependencies = {
             -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
             "MunifTanjim/nui.nvim",
@@ -69,5 +51,6 @@ return {
         }
     },
 
+    -- Rainbow brackets
     { "HiPhish/nvim-ts-rainbow2" },
 }

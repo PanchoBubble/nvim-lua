@@ -44,16 +44,6 @@ vim.g.loaded_netrwPlugin = 1 -- set termguicolors to enable highlight groups
 
 vim.opt.termguicolors = true -- empty setup using defaults
 
-require("nvim-tree").setup({
-    view = { adaptive_size = true }
-})
-
-require('nvim-treesitter.configs').setup {
-    highlight = {
-        enabled = true
-    }
-}
-
 vim.opt.hidden = true
 vim.opt.updatetime = 300
 
@@ -65,7 +55,7 @@ vim.opt.signcolumn = 'yes'
 
 vim.opt.mouse = 'nicr'
 vim.opt.mouse = 'a'
-vim.cmd('colorscheme rose-pine')
+vim.cmd('colorscheme rose-pine-main')
 vim.g.blamer_enabled = true
 
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
