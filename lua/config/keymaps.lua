@@ -60,8 +60,6 @@ vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<CR>")
 
 vim.keymap.set("n", "<leader>gd", "<cmd>Gdiff<CR>")
 
--- Var rename
-
 -- Buffer navigation
 vim.keymap.set("n", "<C-J>", "<C-W><C-J>")
 vim.keymap.set("n", "<C-K>", "<C-W><C-K>")
@@ -80,8 +78,6 @@ vim.keymap.set("x", "<S-DOWN>", ":m'>+<CR>gv=gv")
 -- Tabs and buffer
 vim.keymap.set("n", "gt", "<cmd>tabnext<CR>")
 vim.keymap.set("n", "gT", "<cmd>tabprevious<CR>")
-
-vim.keymap.set("n", "<leader>rn", "<Plug>(coc-rename)")
 
 vim.keymap.set('n', '<leader>qf', "<cmd>lua vim.lsp.buf.code_action()<CR>")
 -- vim.keymap.set('n', '<leader><leader>', "<cmd>EslintFixAll<CR>")
