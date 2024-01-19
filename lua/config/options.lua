@@ -68,3 +68,4 @@ vim.opt.mouse = 'a'
 vim.cmd('colorscheme rose-pine')
 vim.g.blamer_enabled = true
 
+vim.o.sessionoptions="blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
