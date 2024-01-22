@@ -53,4 +53,5 @@ return {
             "rcarriga/nvim-notify",
         }
     },
+    { 'akinsho/bufferline.nvim' }
 }

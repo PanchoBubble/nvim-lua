@@ -69,7 +69,20 @@ require('auto-session').setup {
 }
 -- NVIM TREE
 require("nvim-tree").setup({
+    git = {
+        enable = true,
+        ignore = false,
+        timeout = 500,
+    },
     view = { adaptive_size = true },
+    update_cwd = true,
+    filters = {
+        dotfiles = false,
+    },
+    update_focused_file = {
+        enable = true,
+        update_cwd = true,
+    },
     filesystem_watchers = {
         enable = true,
         debounce_delay = 50,
@@ -98,4 +111,16 @@ require('nvim-treesitter.configs').setup({
         "vim",
         "yaml",
     },
+})
+require("bufferline").setup({
+    options = {
+        offsets = {
+            {
+                filetype = "NvimTree",
+                text = "Nvim Tree",
+                separator = true,
+                text_align = "left"
+            }
+        },
+    }
 })
