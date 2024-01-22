@@ -79,11 +79,9 @@ vim.keymap.set("n", "gt", "<cmd>tabnext<CR>")
 vim.keymap.set("n", "gT", "<cmd>tabprevious<CR>")
 
 vim.keymap.set('n', '<leader>qf', "<cmd>lua vim.lsp.buf.code_action()<CR>")
--- vim.keymap.set('n', '<leader><leader>', "<cmd>EslintFixAll<CR>")
 vim.keymap.set('n', '<leader><leader>', vim.lsp.buf.format)
 
 
-vim.keymap.set('n', '<leader>', "<cmd>SessionRestore<CR>")
 vim.keymap.set('n', 'gr', function() require('telescope.builtin').lsp_references() end, { noremap = true, silent = true })
 vim.keymap.set('n', 'gb', "<cmd>bnext<cr>")
 vim.keymap.set('n', 'gB', "<cmd>bprev<cr>")

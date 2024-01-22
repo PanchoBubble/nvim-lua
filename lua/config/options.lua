@@ -51,6 +51,7 @@ vim.opt.shortmess = vim.opt.shortmess + 'c'
 
 -- always show signcolumns
 vim.opt.signcolumn = 'yes'
+vim.opt.spell = true
 
 
 vim.opt.mouse = 'nicr'
