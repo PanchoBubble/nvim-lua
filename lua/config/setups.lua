@@ -66,6 +66,8 @@ require('auto-session').setup {
     auto_session_enable_last_session = vim.loop.cwd() == vim.loop.os_homedir(),
     post_restore_cmds = { "NvimTreeFindFile" },
     pre_save_cmds = { "NvimTreeClose" },
+    log_level = 'warn',
+    auto_session_enabled = true
 }
 -- NVIM TREE
 require("nvim-tree").setup({
@@ -92,7 +94,11 @@ require("nvim-tree").setup({
 
 -- TreeSitter
 require('nvim-treesitter.configs').setup({
+    modules = {},
     -- rainbow = { enable = true },
+    sync_install = true,
+    auto_install = true,
+    ignore_install = {},
     highlight = { enable = true },
     indent = { enable = true },
     ensure_installed = {
@@ -106,7 +112,6 @@ require('nvim-treesitter.configs').setup({
         "python",
         "query",
         "regex",
-        -- "tsx",
         "typescript",
         "vim",
         "yaml",
