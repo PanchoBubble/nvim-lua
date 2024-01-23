@@ -11,7 +11,7 @@ cmp.setup({
         { name = 'nvim_lsp' },
     },
     mapping = cmp.mapping.preset.insert({
-        ['<C-Space>'] = cmp.mapping.complete(),
+        ['<C-f>'] = cmp.mapping.complete(),
         ['<TAB>'] = cmp.mapping.select_next_item(),
         ['<S-TAB>'] = cmp.mapping.select_prev_item(),
         ['<CR>'] = cmp.mapping.confirm({ select = true }),

@@ -26,7 +26,7 @@ return {
     -- React
     { "tasn/vim-tsx" },
     -- Git Blame
-    { "apzelos/blamer.nvim" },
+    { "f-person/git-blame.nvim" },
     -- Theme
     { 'nvim-tree/nvim-web-devicons' },
     { 'rose-pine/neovim',                 name = 'rose-pine' },
