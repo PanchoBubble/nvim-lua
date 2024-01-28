@@ -76,7 +76,8 @@ vim.keymap.set('n', '<leader>Q', "<cmd>%bd|e#<cr>")
 
 -- Blammer
 vim.keymap.set('n', '<leader>go', "<cmd>GitBlameOpenCommitURL<cr>")
-
+-- Beautify
+vim.keymap.set("n", "<leader>bf", "<cmd>%!js-beautify<cr>")
 
 
 --- Trouble
@@ -90,3 +91,8 @@ vim.keymap.set("n", "<leader>xd", function() troubleMaker("document_diagnostics"
 vim.keymap.set("n", "<leader>xq", function() troubleMaker("quickfix") end)
 vim.keymap.set("n", "<leader>xl", function() troubleMaker("loclist") end)
 vim.keymap.set("n", "gR", function() troubleMaker("lsp_references") end)
+
+
+-- Copilot
+vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
+

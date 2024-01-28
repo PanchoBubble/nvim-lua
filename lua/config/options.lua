@@ -59,4 +59,18 @@ vim.opt.mouse = 'a'
 vim.cmd('colorscheme rose-pine-main')
 vim.g.blamer_enabled = true
 
+vim.g.copilot_no_tab_map = true
+vim.g.copilot_filetypes = {
+    ["*"] = false,
+    ["javascript"] = true,
+    ["typescript"] = true,
+    ["lua"] = false,
+    ["rust"] = true,
+    ["c"] = true,
+    ["c#"] = true,
+    ["c++"] = true,
+    ["go"] = true,
+    ["python"] = true,
+}
+
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"

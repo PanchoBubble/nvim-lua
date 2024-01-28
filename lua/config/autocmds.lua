@@ -8,7 +8,9 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     desc = "Auto-format JS files before saving",
     callback = function()
         local fileName = vim.api.nvim_buf_get_name(0)
-        vim.cmd("EslintFixAll")
+        if vim.fn.exists(':EslintFixAll') > 0 then
+            vim.cmd("EslintFixAll")
+        end
     end,
     group = autocmd_group,
 })

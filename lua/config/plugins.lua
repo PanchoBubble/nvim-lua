@@ -65,5 +65,14 @@ return {
         },
     },
     -- GIT
-    {"tpope/vim-fugitive"}
+    { "tpope/vim-fugitive" },
+
+    -- AUTO PAIRS
+    {
+        'windwp/nvim-autopairs',
+        event = "InsertEnter",
+        opts = {} -- this is equalent to setup({}) function
+    },
+    -- Copilot
+    { 'github/copilot.vim' }
 }

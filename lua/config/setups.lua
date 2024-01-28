@@ -11,9 +11,9 @@ cmp.setup({
         { name = 'nvim_lsp' },
     },
     mapping = cmp.mapping.preset.insert({
-        ['<C-f>'] = cmp.mapping.complete(),
         ['<TAB>'] = cmp.mapping.select_next_item(),
         ['<S-TAB>'] = cmp.mapping.select_prev_item(),
+        ['<C-r>'] = cmp.mapping.complete(),
         ['<CR>'] = cmp.mapping.confirm({ select = true }),
         ['<C-u>'] = cmp.mapping.scroll_docs(-4),
         ['<C-d>'] = cmp.mapping.scroll_docs(4),
@@ -34,6 +34,7 @@ require('mason').setup({})
 require('mason-lspconfig').setup({
     ensure_installed = {
         'tsserver',
+        'gopls',
         'eslint',
         'html',
         'cssls'
@@ -45,6 +46,7 @@ require('mason-lspconfig').setup({
             })
         end,
         ['tsserver'] = function()
+            lspconfig.gopls.setup{}
             lspconfig.tsserver.setup({
                 capabilities = lsp_capabilities,
                 settings = {
@@ -103,6 +105,7 @@ require('nvim-treesitter.configs').setup({
     indent = { enable = true },
     ensure_installed = {
         "bash",
+        "go",
         "html",
         "javascript",
         "json",
