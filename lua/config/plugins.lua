@@ -74,5 +74,16 @@ return {
         opts = {} -- this is equalent to setup({}) function
     },
     -- Copilot
-    { 'github/copilot.vim' }
+    { 'github/copilot.vim' },
+    -- Toggle comment
+    -- -- add this to your lua/plugins.lua, lua/plugins/init.lua,  or the file you keep your other plugins:
+    {
+        'numToStr/Comment.nvim',
+        opts = {},
+        lazy = false,
+    },
+    -- Autotags close
+    {'windwp/nvim-ts-autotag'},
+    -- Replace 
+    {'nvim-pack/nvim-spectre'}
 }

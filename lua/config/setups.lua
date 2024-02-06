@@ -46,7 +46,7 @@ require('mason-lspconfig').setup({
             })
         end,
         ['tsserver'] = function()
-            lspconfig.gopls.setup{}
+            lspconfig.gopls.setup {}
             lspconfig.tsserver.setup({
                 capabilities = lsp_capabilities,
                 settings = {
@@ -98,6 +98,7 @@ require("nvim-tree").setup({
 require('nvim-treesitter.configs').setup({
     modules = {},
     -- rainbow = { enable = true },
+    autotag = { enable = true },
     sync_install = true,
     auto_install = true,
     ignore_install = {},
@@ -132,3 +133,7 @@ require("bufferline").setup({
         },
     }
 })
+
+
+require('Comment').setup()
+require('spectre').setup({})
