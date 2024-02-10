@@ -3,7 +3,12 @@ return {
     { "williamboman/mason-lspconfig.nvim" },
     -- change some telescope options and a keymap to browse plugin files
     { "nvim-lua/plenary.nvim" },
-    { "nvim-telescope/telescope.nvim" },
+    {
+        'nvim-telescope/telescope.nvim',
+        tag = '0.1.5',
+        -- or                              , branch = '0.1.x',
+        dependencies = { 'nvim-lua/plenary.nvim' }
+    },
 
     -- Session
     { 'rmagatti/auto-session' },
@@ -29,7 +34,7 @@ return {
     { "f-person/git-blame.nvim" },
     -- Theme
     { 'nvim-tree/nvim-web-devicons' },
-    { 'rose-pine/neovim',                 name = 'rose-pine' },
+    { 'rose-pine/neovim',               name = 'rose-pine' },
 
     -- add tsserver and setup with typescript.nvim instead of lspconfig
     { "neovim/nvim-lspconfig" },
@@ -83,7 +88,7 @@ return {
         lazy = false,
     },
     -- Autotags close
-    {'windwp/nvim-ts-autotag'},
-    -- Replace 
-    {'nvim-pack/nvim-spectre'}
+    { 'windwp/nvim-ts-autotag' },
+    -- Replace
+    { 'nvim-pack/nvim-spectre' }
 }

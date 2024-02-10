@@ -32,18 +32,21 @@ local nvimTreeToggle = "<cmd>NvimTreeToggle<CR>"
 vim.keymap.set("n", "<leader>n", nvimTreeToggle)
 
 vim.keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<CR>")
+
+vim.keymap.set("n", "<C-p>", "<cmd>Telescope find_files<CR>")
+
 vim.keymap.set("n", "<leader>fw", function()
     return "<cmd>Telescope live_grep default_text=" .. vim.fn.expand("<cword>") .. "<CR>"
 end, { expr = true })
 
-vim.keymap.set("n", "<C-p>", "<cmd>Telescope find_files<CR>")
-vim.keymap.set("n", "<C-f>", "<cmd>Telescope live_grep<CR>")
+vim.keymap.set("n", "<C-f>", "<cmd>Telescope live_grep <cr>")
 vim.keymap.set("n", "<C-C>", "<cmd>Cppath<CR>")
 
 vim.keymap.set("n", "<leader>vpp", "<cmd>e ~/.dotfiles/nvim/.config/nvim/lua/theprimeagen/packer.lua<CR>")
 vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<CR>")
 
 vim.keymap.set("n", "<leader>gd", "<cmd>Gdiff<CR>")
+vim.keymap.set("n", "gd", vim.lsp.buf.implementation)
 
 -- Buffer navigation
 vim.keymap.set("n", "<C-J>", "<C-W><C-J>")
@@ -67,6 +70,10 @@ vim.keymap.set('n', '<leader><leader>', prettify)
 
 
 vim.keymap.set('n', 'gr', function() require('telescope.builtin').lsp_references() end, { noremap = true, silent = true })
+vim.keymap.set('n', 'gR', function() require('telescope.builtin').lsp_implementations() end,
+    { noremap = true, silent = true })
+vim.keymap.set('n', 'gw', function() require('telescope.builtin').lsp_incoming_calls() end,
+    { noremap = true, silent = true })
 vim.keymap.set('n', 'gb', "<cmd>bnext<cr>")
 vim.keymap.set('n', 'gB', "<cmd>bprev<cr>")
 ------
@@ -78,12 +85,42 @@ vim.keymap.set("n", "gT", "<cmd>bprev<CR>")
 -----
 
 
-vim.keymap.set("n", "<leader>q", "q")
+local function closeCurrentBuff()
+    local nvimTree = require('nvim-tree.view')
+    local wasTreeOpen = nvimTree.is_visible()
 
-local closeCurrentBuff = "<cmd>bd<cr><cmd>bnext<cr>"
+    vim.cmd("NvimTreeClose")
+    vim.cmd("bd")
+
+    if wasTreeOpen then
+        vim.cmd("NvimTreeToggle")
+        vim.cmd("bnext")
+    end
+end
+
 vim.keymap.set('n', '<C-q>', closeCurrentBuff)
-local closeAll = "<cmd>%bd|e#<cr>"
-vim.keymap.set('n', '<leader>Q', closeAll .. getNextBuff .. closeCurrentBuff .. nvimTreeToggle)
+vim.keymap.set('n', '<C-w>', '<C-q>')
+
+local function closeAllBuffersButCurrentOne()
+    local nvimTree = require('nvim-tree.view')
+    local wasTreeOpen = nvimTree.is_visible()
+    vim.cmd("NvimTreeClose")
+
+    local bufs = vim.api.nvim_list_bufs()
+
+    local current_buf = vim.api.nvim_get_current_buf()
+    for _, i in ipairs(bufs) do
+        if i ~= current_buf then
+            vim.api.nvim_buf_delete(i, {})
+        end
+    end
+    if wasTreeOpen then
+        vim.cmd("NvimTreeOpen")
+    end
+    vim.cmd("bnext")
+end
+
+vim.keymap.set('n', '<leader>Q', closeAllBuffersButCurrentOne)
 
 -- Blammer
 vim.keymap.set('n', '<leader>go', "<cmd>GitBlameOpenCommitURL<cr>")
@@ -120,3 +157,4 @@ vim.keymap.set('v', '<leader>sw', '<esc><cmd>lua require("spectre").open_visual(
 vim.keymap.set('n', '<leader>sp', '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>', {
     desc = "Search on current file"
 })
+vim.keymap.set("n", "<leader>d", function() vim.diagnostic.open_float() end)
