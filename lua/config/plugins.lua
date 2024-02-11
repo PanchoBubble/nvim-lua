@@ -1,4 +1,6 @@
 return {
+    -- random
+    { 'eandrju/cellular-automaton.nvim' },
     { "williamboman/mason.nvim" },
     { "williamboman/mason-lspconfig.nvim" },
     -- change some telescope options and a keymap to browse plugin files
@@ -18,9 +20,7 @@ return {
     { 'neovim/nvim-lspconfig' },
 
     -- Autocompletion
-    { 'hrsh7th/nvim-cmp' },
-    { 'hrsh7th/cmp-buffer' },
-    { 'hrsh7th/cmp-path' },
+    { 'hrsh7th/nvim-cmp' }, { 'hrsh7th/cmp-buffer' }, { 'hrsh7th/cmp-path' },
     { 'saadparwaiz1/cmp_luasnip' },
     { 'hrsh7th/cmp-nvim-lsp' },
     { 'hrsh7th/cmp-nvim-lua' },
@@ -34,7 +34,9 @@ return {
     { "f-person/git-blame.nvim" },
     -- Theme
     { 'nvim-tree/nvim-web-devicons' },
-    { 'rose-pine/neovim',               name = 'rose-pine' },
+    { 'loctvl842/monokai-pro.nvim' },
+    -- { 'nikolvs/vim-sunbather' },
+    -- { 'rose-pine/neovim',               name = 'rose-pine' },
 
     -- add tsserver and setup with typescript.nvim instead of lspconfig
     { "neovim/nvim-lspconfig" },

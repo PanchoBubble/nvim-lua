@@ -1,3 +1,4 @@
+
 -- LAZY PLUGINS
 local plugins = require('config.plugins')
 require("lazy").setup(plugins)

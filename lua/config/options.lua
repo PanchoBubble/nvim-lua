@@ -28,12 +28,12 @@ vim.opt.isfname:append("@-@")
 
 vim.opt.updatetime = 50
 
-vim.opt.colorcolumn = "80"
+
 
 -- Give more space for displaying messages.
 vim.opt.cmdheight = 2
 
--- Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
+-- Having longer update time (default is 4000 ms = 4 s) leads to noticeable
 -- delays and poor user experience.
 vim.opt.updatetime = 50
 
@@ -56,7 +56,12 @@ vim.opt.spell = true
 
 vim.opt.mouse = 'nicr'
 vim.opt.mouse = 'a'
-vim.cmd('colorscheme rose-pine-main')
+-- vim.cmd('colorscheme rose-pine-main')
+-- vim.cmd('colorscheme sunbather')
+vim.cmd('colorscheme monokai-pro-spectrum')
+-- vim.opt.colorcolumn = "120"
+-- vim.cmd('highlight ColorColumn ctermbg=0 guibg=salmon')
+
 vim.g.blamer_enabled = true
 
 vim.g.copilot_no_tab_map = true
