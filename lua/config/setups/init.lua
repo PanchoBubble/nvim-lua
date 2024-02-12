@@ -1,7 +1,43 @@
-
 -- LAZY PLUGINS
 local plugins = require('config.plugins')
 require("lazy").setup(plugins)
+
+local function rename_file()
+    local source_file, target_file
+
+    vim.ui.input({
+            prompt = "Source : ",
+            completion = "file",
+            default = vim.api.nvim_buf_get_name(0)
+        },
+        function(input)
+            source_file = input
+        end
+    )
+    vim.ui.input({
+            prompt = "Target : ",
+            completion = "file",
+            default = source_file
+        },
+        function(input)
+            target_file = input
+        end
+    )
+
+    local params = {
+        command = "_typescript.applyRenameFile",
+        arguments = {
+            {
+                sourceUri = source_file,
+                targetUri = target_file,
+            },
+        },
+        title = ""
+    }
+
+    vim.lsp.util.rename(source_file, target_file, {})
+    vim.lsp.buf.execute_command(params)
+end
 
 -- CMP TAGS
 local cmp = require('cmp')
@@ -35,6 +71,7 @@ require('mason').setup({})
 require('mason-lspconfig').setup({
     ensure_installed = {
         'tsserver',
+        'pyright',
         'gopls',
         'eslint',
         'html',
@@ -44,6 +81,12 @@ require('mason-lspconfig').setup({
         function(server)
             lspconfig[server].setup({
                 capabilities = lsp_capabilities,
+                commands = {
+                    RenameFile = {
+                        rename_file,
+                        description = "Rename File"
+                    },
+                }
             })
         end,
         ['tsserver'] = function()
@@ -63,6 +106,20 @@ require('mason-lspconfig').setup({
         end
     }
 })
+
+lspconfig.pyright.setup {
+    --on_attach = on_attach,
+    settings = {
+        pyright = {
+            autoImportCompletion = true,
+        },
+        python = {
+            analysis = {
+                autoSearchPaths = true, diagnosticMode = 'openFilesOnly', useLibraryCodeForTypes = true, typeCheckingMode = 'off'
+            }
+        }
+    }
+}
 
 -- SESSION
 require('auto-session').setup {

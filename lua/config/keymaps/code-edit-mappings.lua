@@ -18,7 +18,10 @@ vim.keymap.set("n", "<leader>Y", [["+Y]])
 vim.keymap.set("n", "<leader>gd", "<cmd>Gdiff<CR>")
 
 -- Copilot
-vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
+-- vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
+vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Suggest()', { silent = true, expr = true })
+vim.api.nvim_set_keymap("i", "<C-K>", 'copilot#Next()', { silent = true, expr = true })
+vim.api.nvim_set_keymap("i", "<C-L>", 'copilot#Prev()', { silent = true, expr = true })
 
 -- Spectre
 vim.keymap.set('n', '<leader>S', require("spectre").toggle, {
