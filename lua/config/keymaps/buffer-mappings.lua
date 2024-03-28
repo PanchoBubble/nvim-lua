@@ -1,4 +1,3 @@
-
 -- Buffer navigation
 vim.keymap.set("n", "<C-J>", "<C-W><C-J>")
 vim.keymap.set("n", "<C-K>", "<C-W><C-K>")
@@ -34,16 +33,8 @@ vim.keymap.set("n", "gT", "<cmd>bprev<CR>")
 
 -- Close current
 local function closeCurrentBuff()
-    local nvimTree = require('nvim-tree.view')
-    local wasTreeOpen = nvimTree.is_visible()
-
     vim.cmd("NvimTreeClose")
     vim.cmd("bd")
-
-    if wasTreeOpen then
-        vim.cmd("NvimTreeToggle")
-        vim.cmd("bnext")
-    end
 end
 
 vim.keymap.set('n', '<C-q>', closeCurrentBuff)
@@ -51,8 +42,6 @@ vim.keymap.set('n', '<C-w>', closeCurrentBuff)
 
 -- Close others
 local function closeAllBuffersButCurrentOne()
-    local nvimTree = require('nvim-tree.view')
-    local wasTreeOpen = nvimTree.is_visible()
     vim.cmd("NvimTreeClose")
 
     local bufs = vim.api.nvim_list_bufs()
@@ -63,10 +52,6 @@ local function closeAllBuffersButCurrentOne()
             vim.api.nvim_buf_delete(i, {})
         end
     end
-    if wasTreeOpen then
-        vim.cmd("NvimTreeOpen")
-    end
-    vim.cmd("bnext")
 end
 vim.keymap.set('n', '<leader>Q', closeAllBuffersButCurrentOne)
 vim.keymap.set('n', '<leader>W', closeAllBuffersButCurrentOne)

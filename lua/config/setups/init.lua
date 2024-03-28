@@ -2,18 +2,41 @@
 local plugins = require('config.plugins')
 require("lazy").setup(plugins)
 
-local function rename_file()
-    local source_file, target_file
+local function paste_node(node)
+    local module = require "nvim-tree.actions.fs.copy-paste"
+    local lib = require "nvim-tree.lib"
 
-    vim.ui.input({
-            prompt = "Source : ",
-            completion = "file",
-            default = vim.api.nvim_buf_get_name(0)
-        },
-        function(input)
-            source_file = input
-        end
-    )
+    local clipboard = module.get_clipboard()
+    if clipboard.cut[1] ~= nil then
+        module.do_paste(node, "cut", module.do_cut)
+        local source = clipboard.cut[1].absolute_path
+
+        local target = lib.get_last_group_node(node)
+        local params = {
+            command = "_typescript.applyRenameFile",
+            arguments = {
+                {
+                    sourceUri = source,
+                    targetUri = target,
+                },
+            },
+            title = ""
+        }
+        vim.lsp.buf.execute_command(params)
+    else
+        module.do_paste(node, "copy", module.do_copy)
+    end
+
+
+    vim.api.nvim_echo({ { 'Source file', 'None' } }, false, {})
+end
+
+local function rename_file()
+    local source_file = vim.api.nvim_buf_get_name(0)
+    local target_file
+
+    vim.api.nvim_echo({ { 'Source file', 'None' }, { source_file, 'None' } }, false, {})
+
     vim.ui.input({
             prompt = "Target : ",
             completion = "file",
@@ -71,8 +94,9 @@ require('mason').setup({})
 require('mason-lspconfig').setup({
     ensure_installed = {
         'tsserver',
-        'pyright',
+        -- 'pyright',
         'gopls',
+        'rust_analyzer',
         'eslint',
         'html',
         'cssls'
@@ -103,23 +127,36 @@ require('mason-lspconfig').setup({
                     },
                 }
             })
-        end
+        end,
+        -- ['pyright'] = function()
+        --     lspconfig.pyright.setup({
+        --         capabilities = lsp_capabilities,
+        --     })
+        -- end
     }
 })
 
-lspconfig.pyright.setup {
-    --on_attach = on_attach,
+lspconfig.rust_analyzer.setup {
+    -- Server-specific settings. See `:help lspconfig-setup`
     settings = {
-        pyright = {
-            autoImportCompletion = true,
-        },
-        python = {
-            analysis = {
-                autoSearchPaths = true, diagnosticMode = 'openFilesOnly', useLibraryCodeForTypes = true, typeCheckingMode = 'off'
-            }
-        }
-    }
+        ['rust-analyzer'] = {},
+    },
 }
+
+
+-- lspconfig.pyright.setup {
+--     --on_attach = on_attach,
+--     settings = {
+--         pyright = {
+--             autoImportCompletion = true,
+--         },
+--         python = {
+--             analysis = {
+--                 autoSearchPaths = true, diagnosticMode = 'openFilesOnly', useLibraryCodeForTypes = true, typeCheckingMode = 'off'
+--             }
+--         }
+--     }
+-- }
 
 -- SESSION
 require('auto-session').setup {
@@ -129,6 +166,7 @@ require('auto-session').setup {
     log_level = 'warn',
     auto_session_enabled = true
 }
+
 -- NVIM TREE
 require("nvim-tree").setup({
     git = {
@@ -151,6 +189,7 @@ require("nvim-tree").setup({
         ignore_dirs = { "node_modules" },
     },
 })
+-- require("nvim-tree.actions.fs.copy-paste").paste = paste_node
 
 -- TreeSitter
 require('nvim-treesitter.configs').setup({
