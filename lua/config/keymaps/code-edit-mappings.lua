@@ -18,9 +18,9 @@ vim.keymap.set("n", "<leader>Y", [["+Y]])
 vim.keymap.set("n", "<leader>gd", "<cmd>Gdiff<CR>")
 
 -- Copilot
-vim.keymap.set("i", "<C-H>", '<Plug>(copilot-suggest)')
-vim.keymap.set("i", "<C-K>", '<Plug>(copilot-next)')
-vim.keymap.set("i", "<C-L>", '<Plug>(copilot-accept-line)')
+-- vim.keymap.set("i", "<C-H>", '<Plug>(copilot-suggest)')
+-- vim.keymap.set("i", "<C-K>", '<Plug>(copilot-next)')
+-- vim.keymap.set("i", "<C-L>", '<Plug>(copilot-accept-line)')
 
 -- Spectre
 vim.keymap.set('n', '<leader>S', require("spectre").toggle, {

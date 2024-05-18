@@ -52,6 +52,8 @@ local function closeAllBuffersButCurrentOne()
             vim.api.nvim_buf_delete(i, {})
         end
     end
+
+    vim.cmd("NvimTreeOpen")
 end
 vim.keymap.set('n', '<leader>Q', closeAllBuffersButCurrentOne)
 vim.keymap.set('n', '<leader>W', closeAllBuffersButCurrentOne)

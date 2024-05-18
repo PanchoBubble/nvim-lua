@@ -7,10 +7,19 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },
     desc = "Auto-format JS files before saving",
     callback = function()
-        local fileName = vim.api.nvim_buf_get_name(0)
+        -- local fileName = vim.api.nvim_buf_get_name(0)
         if vim.fn.exists(':EslintFixAll') > 0 then
             vim.cmd("EslintFixAll")
         end
+    end,
+    group = autocmd_group,
+})
+
+vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+    pattern = { "*.json" },
+    desc = "Auto-format JSON files before saving",
+    callback = function()
+        vim.cmd("%!python -m json.tool")
     end,
     group = autocmd_group,
 })

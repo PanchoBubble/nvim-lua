@@ -82,7 +82,7 @@ return {
     -- },
 
     -- Copilot
-    { 'github/copilot.vim' },
+    -- { 'github/copilot.vim' },
     -- Toggle comment
     -- -- add this to your lua/plugins.lua, lua/plugins/init.lua,  or the file you keep your other plugins:
     {
@@ -91,5 +91,9 @@ return {
         lazy = false,
     },
     -- Replace
-    { 'nvim-pack/nvim-spectre' }
+    { 'nvim-pack/nvim-spectre' },
+    -- DB
+    { 'tpope/vim-dadbod' },
+    { 'kristijanhusak/vim-dadbod-ui' },
+    { 'kristijanhusak/vim-dadbod-completion' },
 }

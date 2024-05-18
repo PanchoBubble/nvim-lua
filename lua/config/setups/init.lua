@@ -85,6 +85,17 @@ cmp.setup({
     },
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "sql", "mysql", "plsql" },
+    callback = function()
+        cmp.setup.buffer {
+            sources = {
+                { name = 'vim-dadbod-completion' }
+            }
+        }
+    end,
+})
+
 -- LSP
 local lspconfig = require('lspconfig')
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -99,7 +110,8 @@ require('mason-lspconfig').setup({
         'rust_analyzer',
         'eslint',
         'html',
-        'cssls'
+        'cssls',
+        'sqls'
     },
     handlers = {
         function(server)
@@ -160,6 +172,8 @@ lspconfig.rust_analyzer.setup {
 
 -- SESSION
 require('auto-session').setup {
+    auto_session_last_session_dir = vim.fn.stdpath "data" .. "/sessions/",
+    auto_session_root_dir = vim.fn.stdpath "data" .. "/sessions/",
     auto_session_enable_last_session = vim.loop.cwd() == vim.loop.os_homedir(),
     post_restore_cmds = { "NvimTreeFindFile" },
     pre_save_cmds = { "NvimTreeClose" },
@@ -178,6 +192,7 @@ require("nvim-tree").setup({
     update_cwd = true,
     filters = {
         dotfiles = false,
+        custom = { 'node_modules' }
     },
     update_focused_file = {
         enable = true,
