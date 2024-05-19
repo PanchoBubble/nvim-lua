@@ -1,7 +1,7 @@
 vim.opt.guicursor = ""
 
-vim.opt.nu = true
-vim.opt.relativenumber = true
+-- vim.opt.nu = true
+vim.opt.rnu = false
 
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
@@ -56,26 +56,9 @@ vim.opt.spell = true
 
 vim.opt.mouse = 'nicr'
 vim.opt.mouse = 'a'
--- vim.cmd('colorscheme rose-pine-main')
--- vim.cmd('colorscheme sunbather')
+
 vim.cmd('colorscheme monokai-pro-spectrum')
--- vim.opt.colorcolumn = "120"
--- vim.cmd('highlight ColorColumn ctermbg=0 guibg=salmon')
 
 vim.g.blamer_enabled = true
-
--- vim.g.copilot_no_tab_map = true
--- vim.g.copilot_filetypes = {
---     ["*"] = false,
---     ["javascript"] = true,
---     ["typescript"] = true,
---     ["lua"] = false,
---     ["rust"] = true,
---     ["c"] = true,
---     ["c#"] = true,
---     ["c++"] = true,
---     ["go"] = true,
---     ["python"] = true,
--- }
 
 vim.o.sessionoptions = "buffers,curdir,tabpages,terminal,localoptions"
