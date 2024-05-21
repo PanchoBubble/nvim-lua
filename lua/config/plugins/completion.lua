@@ -26,17 +26,12 @@ return {
                     { name = "path" },
                     { name = "buffer" },
                 },
-                -- mapping = {
-                --   ["<C-n>"] = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
-                --   ["<C-p>"] = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Insert },
-                --   ["<CR>"] = cmp.mapping(
-                --     cmp.mapping.confirm {
-                --       behavior = cmp.ConfirmBehavior.Insert,
-                --       select = true,
-                --     },
-                --     { "i", "c" }
-                --   ),
-                -- },
+                mapping = {
+                    ['<TAB>'] = cmp.mapping.select_next_item(),
+                    ['<S-TAB>'] = cmp.mapping.select_prev_item(),
+                    ['<C-r>'] = cmp.mapping.complete(),
+                    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+                },
 
                 -- Enable luasnip to handle snippet expansion for nvim-cmp
                 snippet = {
