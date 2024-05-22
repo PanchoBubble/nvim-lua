@@ -1,7 +1,6 @@
 vim.opt.guicursor = ""
 
--- vim.opt.nu = true
-vim.opt.rnu = false
+vim.wo.number = true
 
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
@@ -56,7 +55,6 @@ vim.opt.spell = true
 
 vim.opt.mouse = 'nicr'
 vim.opt.mouse = 'a'
-
 vim.cmd('colorscheme monokai-pro-spectrum')
 
 vim.g.blamer_enabled = true

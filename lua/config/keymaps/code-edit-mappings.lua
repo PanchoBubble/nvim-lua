@@ -1,4 +1,3 @@
-
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 
@@ -17,10 +16,6 @@ vim.keymap.set("n", "<leader>Y", [["+Y]])
 -- GIT
 vim.keymap.set("n", "<leader>gd", "<cmd>Gdiff<CR>")
 
--- Copilot
--- vim.keymap.set("i", "<C-H>", '<Plug>(copilot-suggest)')
--- vim.keymap.set("i", "<C-K>", '<Plug>(copilot-next)')
--- vim.keymap.set("i", "<C-L>", '<Plug>(copilot-accept-line)')
 
 -- Spectre
 vim.keymap.set('n', '<leader>S', require("spectre").toggle, {
