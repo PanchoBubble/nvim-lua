@@ -8,9 +8,10 @@ return {
             "hrsh7th/cmp-nvim-lsp",
             "hrsh7th/cmp-path",
             "hrsh7th/cmp-buffer",
-            { "L3MON4D3/LuaSnip", build = "make install_jsregexp" },
+            { "L3MON4D3/LuaSnip", build = "make install_jsregexp", version = "v2.3.0" },
             "saadparwaiz1/cmp_luasnip",
         },
+
         config = function()
             vim.opt.completeopt = { "menu", "menuone", "noselect" }
             vim.opt.shortmess:append "c"
@@ -55,8 +56,9 @@ return {
                 updateevents = "TextChanged,TextChangedI",
             }
 
-            for _, ft_path in ipairs(vim.api.nvim_get_runtime_file("lua/custom/snippets/*.lua", true)) do
+            for _, ft_path in ipairs(vim.api.nvim_get_runtime_file("lua/config/snippets/*.lua", true)) do
                 loadfile(ft_path)()
+                vim.print(ft_path)
             end
 
             vim.keymap.set({ "i", "s" }, "<c-k>", function()
@@ -70,6 +72,6 @@ return {
                     ls.jump(-1)
                 end
             end, { silent = true })
-        end,
+        end
     },
 }

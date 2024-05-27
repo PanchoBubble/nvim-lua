@@ -42,18 +42,30 @@ vim.keymap.set('n', '<C-w>', closeCurrentBuff)
 
 -- Close others
 local function closeAllBuffersButCurrentOne()
-    vim.cmd("NvimTreeClose")
+    vim.print(vim.fn.expand('%'))
+    if string.find(vim.fn.expand('%'), vim.fn.expand('%')) then
+        vim.print("Cant close all while focusing on the NVIM TREE MF")
+    else
+        local was_open = require 'nvim-tree.view'.is_visible()
 
-    local bufs = vim.api.nvim_list_bufs()
+        if was_open then
+            vim.cmd("NvimTreeClose")
+        end
 
-    local current_buf = vim.api.nvim_get_current_buf()
-    for _, i in ipairs(bufs) do
-        if i ~= current_buf then
-            vim.api.nvim_buf_delete(i, {})
+        local bufs = vim.api.nvim_list_bufs()
+
+        local current_buf = vim.api.nvim_get_current_buf()
+        for _, i in ipairs(bufs) do
+            if i ~= current_buf then
+                vim.api.nvim_buf_delete(i, {})
+            end
+        end
+
+        if was_open then
+            vim.cmd("NvimTreeOpen")
+            vim.cmd("bnext")
         end
     end
-
-    vim.cmd("NvimTreeOpen")
 end
 vim.keymap.set('n', '<leader>Q', closeAllBuffersButCurrentOne)
 vim.keymap.set('n', '<leader>W', closeAllBuffersButCurrentOne)
