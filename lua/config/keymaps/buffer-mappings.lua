@@ -42,8 +42,7 @@ vim.keymap.set('n', '<C-w>', closeCurrentBuff)
 
 -- Close others
 local function closeAllBuffersButCurrentOne()
-    vim.print(vim.fn.expand('%'))
-    if string.find(vim.fn.expand('%'), vim.fn.expand('%')) then
+    if string.find(vim.fn.expand('%'), 'NvimTree') then
         vim.print("Cant close all while focusing on the NVIM TREE MF")
     else
         local was_open = require 'nvim-tree.view'.is_visible()

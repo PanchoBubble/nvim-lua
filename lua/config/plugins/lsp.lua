@@ -63,7 +63,7 @@ return {
                 ensure_installed = {
                     'tsserver',
                     -- 'pyright',
-                    'lua_ls',
+                    'luau_lsp',
                     'gopls',
                     'rust_analyzer',
                     'eslint',

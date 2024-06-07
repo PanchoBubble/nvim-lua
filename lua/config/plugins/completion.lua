@@ -17,7 +17,12 @@ return {
             vim.opt.shortmess:append "c"
 
             local lspkind = require "lspkind"
-            lspkind.init {}
+            lspkind.init {
+                symbol_map = {
+                    Supermaven = "",
+                },
+            }
+            vim.api.nvim_set_hl(0, "CmpItemKindSupermaven", { fg = "#6CC644" })
 
             local cmp = require "cmp"
 
@@ -26,6 +31,7 @@ return {
                     { name = "nvim_lsp" },
                     { name = "path" },
                     { name = "buffer" },
+                    { name = "supermaven" },
                 },
                 mapping = {
                     ['<TAB>'] = cmp.mapping.select_next_item(),
