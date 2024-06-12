@@ -62,12 +62,13 @@ return {
             require('mason-lspconfig').setup({
                 ensure_installed = {
                     'tsserver',
-                    -- 'pyright',
+                    'pylsp',
                     'luau_lsp',
                     'gopls',
                     'rust_analyzer',
                     'eslint',
                     'html',
+                    'htmx',
                     'cssls',
                     'sqls'
                 },
@@ -98,11 +99,6 @@ return {
                             }
                         })
                     end,
-                    -- ['pyright'] = function()
-                    --     lspconfig.pyright.setup({
-                    --         capabilities = lsp_capabilities,
-                    --     })
-                    -- end
                 }
             })
 
@@ -112,6 +108,14 @@ return {
                     ['rust-analyzer'] = {},
                 },
             }
+
+            lspconfig.htmx.setup({
+                filetypes = { "html", "htmldjango" }
+            })
+
+            lspconfig.pylsp.setup({
+                capabilities = lsp_capabilities,
+            })
         end,
     },
 }

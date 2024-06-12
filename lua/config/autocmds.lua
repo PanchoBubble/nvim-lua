@@ -15,6 +15,16 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     group = autocmd_group,
 })
 
+-- -- Post formatting
+-- vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+--     pattern = { "*.py" },
+--     desc = "Auto-format Python files before saving",
+--     callback = function()
+--         vim.cmd("!black %")
+--     end,
+--     group = autocmd_group,
+-- })
+
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     pattern = { "*.json" },
     desc = "Auto-format JSON files before saving",
