@@ -27,8 +27,6 @@ vim.opt.isfname:append("@-@")
 
 vim.opt.updatetime = 50
 
-
-
 -- Give more space for displaying messages.
 vim.opt.cmdheight = 2
 

@@ -3,7 +3,6 @@ local function rename_file()
     local target_file
 
     vim.api.nvim_echo({ { 'Source file', 'None' }, { source_file, 'None' } }, false, {})
-
     vim.ui.input({
             prompt = "Target : ",
             completion = "file",
@@ -115,6 +114,22 @@ return {
 
             lspconfig.pylsp.setup({
                 capabilities = lsp_capabilities,
+                configurationSources = { "flake8" },
+                settings = {
+                    pylsp = {
+                        plugins = {
+                            pycodestyle = { enabled = false },
+                            pyflakes = { enabled = false },
+                            flake8 = {
+                                enabled = true,
+                                config = {
+                                    maxComplexity = 11,
+                                    maxLineLength = 5000,
+                                },
+                            },
+                        },
+                    },
+                },
             })
         end,
     },
