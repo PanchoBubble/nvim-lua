@@ -11,4 +11,7 @@ return {
 
     -- GIT
     { "tpope/vim-fugitive" },
+
+    -- Uncommited
+    { "mhinz/vim-signify" },
 }
