@@ -37,7 +37,7 @@ local function closeCurrentBuff()
     vim.cmd("bd")
 end
 
-vim.keymap.set('n', '<C-q>', closeCurrentBuff)
+vim.keymap.set('n', '<C-d>', closeCurrentBuff)
 vim.keymap.set('n', '<C-w>', closeCurrentBuff)
 
 -- Close others
@@ -66,5 +66,6 @@ local function closeAllBuffersButCurrentOne()
         end
     end
 end
+vim.keymap.set('n', '<CS-d>', closeAllBuffersButCurrentOne)
 vim.keymap.set('n', '<leader>Q', closeAllBuffersButCurrentOne)
 vim.keymap.set('n', '<leader>W', closeAllBuffersButCurrentOne)

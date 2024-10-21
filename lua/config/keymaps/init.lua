@@ -1,4 +1,3 @@
-vim.g.mapleader = " "
 
 require('config.keymaps.code-edit-mappings')
 require('config.keymaps.code-clean-mappings')

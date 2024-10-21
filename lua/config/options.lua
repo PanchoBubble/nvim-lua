@@ -57,4 +57,5 @@ vim.cmd('colorscheme monokai-pro-spectrum')
 
 vim.g.blamer_enabled = true
 
-vim.o.sessionoptions = "buffers,curdir,tabpages,terminal,localoptions"
+vim.o.sessionoptions = "buffers,curdir,folds,tabpages,winsize,localoptions"
+
