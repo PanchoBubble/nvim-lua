@@ -60,7 +60,7 @@ return {
             require('mason').setup({})
             require('mason-lspconfig').setup({
                 ensure_installed = {
-                    'tsserver',
+                    'ts_ls',
                     'pylsp',
                     'luau_lsp',
                     'gopls',
@@ -84,9 +84,9 @@ return {
                             }
                         })
                     end,
-                    ['tsserver'] = function()
+                    ['ts_ls'] = function()
                         lspconfig.gopls.setup {}
-                        lspconfig.tsserver.setup({
+                        lspconfig.ts_ls.setup({
                             capabilities = lsp_capabilities,
                             settings = {
                                 completions = {
@@ -106,7 +106,7 @@ return {
                 root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
             }
 
-            lspconfig.tsserver.setup {
+            lspconfig.ts_ls.setup {
                 root_dir = lspconfig.util.root_pattern("package.json"),
                 single_file_support = false
             }
