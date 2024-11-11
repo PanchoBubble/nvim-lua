@@ -53,7 +53,7 @@ vim.opt.spell = true
 
 vim.opt.mouse = 'nicr'
 vim.opt.mouse = 'a'
-vim.cmd('colorscheme monokai-pro-spectrum')
+vim.cmd('colorscheme monokai-pro')
 
 vim.g.blamer_enabled = true
 

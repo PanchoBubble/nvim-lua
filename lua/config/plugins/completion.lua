@@ -37,7 +37,7 @@ return {
                     ['<TAB>'] = cmp.mapping.select_next_item(),
                     ['<S-TAB>'] = cmp.mapping.select_prev_item(),
                     ['<C-r>'] = cmp.mapping.complete(),
-                    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+                    ['<C-y>'] = cmp.mapping.confirm({ select = true }),
                 },
 
                 -- Enable luasnip to handle snippet expansion for nvim-cmp
