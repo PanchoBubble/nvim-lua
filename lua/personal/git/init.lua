@@ -1,8 +1,20 @@
+local remote_branches_label = " Remote branches"
+local local_branches_label = " Local branches"
 -- Helper function to checkout the branch
 vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
     local line = vim.api.nvim_get_current_line()
     local first_char = string.sub(line, 1, 1)
     local line_length = string.len(line)
+    if line == local_branches_label then
+        vim.cmd("close")
+        vim.cmd("Branch")
+        return
+    end
+    if line == remote_branches_label then
+        vim.cmd("close")
+        vim.cmd("Branch remote")
+        return
+    end
     if line_length < 2 or first_char == "*" or first_char == "-" then
         return
     end
@@ -10,14 +22,16 @@ vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
     local branch_name = line:match("%s*(.+)$")  -- Extract branch name from line
     if branch_name then
         vim.cmd("Git checkout " .. branch_name) -- Checkout the selected branch
-        vim.cmd("close")                        -- Close the floating window
+        vim.cmd("close")
         vim.cmd("Branch")
     end
 end, {})
 
-vim.api.nvim_create_user_command("Branch", function()
+vim.api.nvim_create_user_command("Branch", function(params)
+    local remote = params.args == "remote"
     -- Run the git branch command and capture output
-    local handle = io.popen("git branch")
+    local command = remote and "git branch -r" or "git branch"
+    local handle = io.popen(command)
     if handle == nil then
         return
     end
@@ -40,7 +54,7 @@ vim.api.nvim_create_user_command("Branch", function()
     end
     table.insert(lines, '')
 
-    height = #lines + 2
+    height = #lines + 3
     width = width + 4
     local row = math.floor((vim.o.lines - height) / 2)
     local col = math.floor((vim.o.columns - width) / 2)
@@ -50,7 +64,8 @@ vim.api.nvim_create_user_command("Branch", function()
     local line_padding = math.floor(((width - #header) / 2))
     local padded_header = string.rep(padding_spaces, line_padding) .. header .. string.rep(padding_spaces, line_padding)
     table.insert(lines, 1, padded_header)
-    table.insert(lines, 2, "")
+    table.insert(lines, 2, remote and local_branches_label or remote_branches_label)
+    table.insert(lines, 3, "")
 
 
 
@@ -87,4 +102,6 @@ vim.api.nvim_create_user_command("Branch", function()
             end
         end,
     })
-end, {})
+end, {
+    nargs = '*',
+})
