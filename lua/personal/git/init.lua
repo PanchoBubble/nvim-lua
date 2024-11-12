@@ -28,8 +28,6 @@ vim.api.nvim_create_user_command("Branch", function()
     -- Define window dimensions and position
     local width = 10
     local height = 10
-    local row = math.floor((vim.o.lines - height) / 2)
-    local col = math.floor((vim.o.columns - width) / 2)
 
     -- Split output into lines
     local lines = {}
@@ -44,6 +42,8 @@ vim.api.nvim_create_user_command("Branch", function()
 
     height = #lines + 2
     width = width + 4
+    local row = math.floor((vim.o.lines - height) / 2)
+    local col = math.floor((vim.o.columns - width) / 2)
 
     local header = 'Branches'
     local padding_spaces = "-"
