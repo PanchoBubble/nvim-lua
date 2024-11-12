@@ -24,3 +24,4 @@ require("lazy").setup({ import = "config/plugins" }, {
 require("config.autocmds")
 require("config.keymaps")
 require("config.options")
+require("personal.git")
