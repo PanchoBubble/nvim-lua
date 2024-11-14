@@ -36,6 +36,7 @@ local function get_active_tab(value)
 end
 
 vim.api.nvim_create_user_command('BranchToggle', function(view)
+    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
     local tab_number = view.args
     if tab_number then
         active_tab = get_active_tab(tab_number) or tabs[1]

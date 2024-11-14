@@ -16,14 +16,16 @@ vim.api.nvim_create_user_command('BranchFileToggleStaged', function()
     local add = not_staged_line_number > 0 and buff_row > not_staged_line_number
 
     local command = add and "Git add" or "silent Git reset"
-    local file_path = clean_file_path(line)
+    local file_path = clean_file_path(line or " ")
 
-    local is_path = is_path_format(file_path)
+    local is_path = is_path_format(file_path or " ")
 
     if file_path and is_path then
         vim.cmd(command .. " ./" .. file_path)
-        vim.cmd("close")
-        vim.cmd("Branch")
+        vim.cmd("BranchToggle")
+        vim.defer_fn(function()
+            vim.api.nvim_win_set_cursor(0, { buff_row, 0 })
+        end, 50)
     end
 end, {})
 
@@ -96,11 +98,6 @@ vim.api.nvim_create_user_command('BranchResetAll', function()
     vim.cmd("BranchToggle")
 end, {})
 
-vim.api.nvim_create_user_command('BranchCommit', function()
-    vim.cmd("close")
-    vim.cmd("Git commit")
-end, {})
-
 vim.api.nvim_create_user_command('BranchStashPop', function()
     vim.cmd("Git stash pop")
     vim.cmd("BranchToggle")
@@ -123,7 +120,15 @@ vim.api.nvim_create_user_command('BranchPush', function()
     vim.cmd("BranchToggle")
 end, {})
 
+vim.api.nvim_create_user_command('BranchFetch', function()
+    vim.cmd("silent Git fetch")
+    vim.cmd("BranchToggle")
+end, {})
+
 local function add_keymaps(window_buffer)
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'c', "<cmd>BranchCommit<CR>",
+        { noremap = true, silent = true })
+
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'c', "<cmd>BranchCommit<CR>",
         { noremap = true, silent = true })
 
@@ -140,6 +145,9 @@ local function add_keymaps(window_buffer)
         { noremap = true, silent = true })
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-P>', "<cmd>BranchPush<CR>",
+        { noremap = true, silent = true })
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-F>', "<cmd>BranchFetch<CR>",
         { noremap = true, silent = true })
 end
 

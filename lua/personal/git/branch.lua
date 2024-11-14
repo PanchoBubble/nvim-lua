@@ -14,8 +14,7 @@ vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
     local branch_name = clean_branch_name(line)
     if branch_name then
         vim.cmd("Git checkout " .. branch_name) -- Checkout the selected branch
-        vim.cmd("close")
-        vim.cmd("Branch")
+        vim.cmd("BranchToggle")
     end
 end, {})
 
