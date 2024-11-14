@@ -1,30 +1,24 @@
-local local_branches = {
-    label = "[1] Local",
-    value = '1',
-    command = "git branch",
-}
+require('personal.git.branch')
+local local_branches = require('personal.git.branch').local_branches
+local remote_branches = require('personal.git.branch').remote_branches
+local status = require('personal.git.status')
 
-local remote_branches = {
-    label = "[2] Remote",
-    value = '2',
-    command = "git branch -r",
-}
-
-local branch_status = {
-    label = "[3] Status",
-    value = '3',
-    command = "git status",
-    on_enter = "BranchToggleStaged",
-}
-
-local tabs = {
+local imported_tabs = {
+    status,
     local_branches,
     remote_branches,
-    branch_status
 }
 
-local active_tab = local_branches
-local untracked_line_number = 0
+local tabs = {}
+for key, tab in pairs(imported_tabs) do
+    local tab_copy = vim.deepcopy(tab) -- Create a copy of the tab
+    tab_copy.value = key
+    tab_copy.on_buffer_load = tab.on_buffer_load
+    tab_copy.label = "[" .. key .. "] " .. tab.label -- Add the value to the label
+    table.insert(tabs, tab_copy)                     -- Add the imported tab to the table
+end
+
+local active_tab = tabs[1]
 
 local view_width = 0
 local view_height = 0
@@ -33,8 +27,8 @@ local floating_window = nil
 local lines = {}
 
 local function get_active_tab(value)
-    for _, tab in ipairs(tabs) do
-        if tab.value == value then
+    for index, tab in ipairs(tabs) do
+        if tostring(index) == tostring(value) then
             return tab
         end
     end
@@ -43,48 +37,27 @@ end
 
 vim.api.nvim_create_user_command('BranchToggle', function(view)
     local tab_number = view.args
-    active_tab = get_active_tab(tab_number) or local_branches
+    if tab_number then
+        active_tab = get_active_tab(tab_number) or tabs[1]
+    end
     vim.cmd("close")
     vim.cmd("Branch")
 end, {
     nargs = '*',
 })
 
-vim.api.nvim_create_user_command('BranchToggleStaged', function()
-    local line = vim.api.nvim_get_current_line()
-    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
-    local add = buff_row > untracked_line_number
+vim.api.nvim_create_user_command('BranchToggle', function(view)
+    local tab_number = view.args
+    active_tab = get_active_tab(tab_number) or tabs[1]
+    vim.cmd("close")
+    vim.cmd("Branch")
+end, {
+    nargs = '*',
+})
 
-    local command = add and "Git add" or "Git reset"
-    local branch_name = line:gsub("modified:", ""):match("%s*(.+)$")  -- Extract branch name from line
-    vim.print(branch_name)
-
-    if branch_name then
-        vim.cmd(command .. " ./" .. branch_name) -- Checkout the selected branch
-        vim.cmd("close")
-        vim.cmd("Branch")
-    end
-end, {})
-
-vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
-    local line = vim.api.nvim_get_current_line()
-    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
-    local first_char = string.sub(line, 1, 1)
-    local line_length = string.len(line)
-    if line_length < 2 or first_char == "*" or first_char == "-" or buff_row < 3 then
-        return
-    end
-
-    local branch_name = line:match("%s*(.+)$")  -- Extract branch name from line
-    if branch_name then
-        vim.cmd("Git checkout " .. branch_name) -- Checkout the selected branch
-        vim.cmd("close")
-        vim.cmd("Branch")
-    end
-end, {})
 
 local function add_header()
-    local header = 'Branches'
+    local header = active_tab.header
     local padding_spaces = "-"
     local line_padding = math.floor(((view_width - #header) / 2))
     local padded_header = string.rep(padding_spaces, line_padding) .. header .. string.rep(padding_spaces, line_padding)
@@ -109,14 +82,16 @@ local function add_buffer_keymaps()
 
     -- Define toggles
     for _, tab in ipairs(tabs) do
-        vim.api.nvim_buf_set_keymap(window_buffer, 'n', tab.value, "<cmd>BranchToggle " .. tab.value .. "<CR>",
+        vim.api.nvim_buf_set_keymap(window_buffer, 'n', tostring(tab.value),
+            "<cmd>BranchToggle " .. tostring(tab.value) .. "<CR>",
             { noremap = true, silent = true })
     end
 
     -- Define action on <CR>
-    local command = active_tab.on_enter or "BranchCheckoutCurrentLine"
-    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<CR>', "<cmd>" .. command .. "<CR>",
+    local command = "<cmd>" .. active_tab.on_enter .. "<CR>"
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<CR>', command,
         { noremap = true, silent = true })
+
     -- Set keymaps to close the modal
     local keymaps = {
         'q', '<Esc>', '<C-c>'
@@ -213,10 +188,6 @@ vim.api.nvim_create_user_command("Branch", function()
         border = 'rounded'
     })
 
-    local highlight_group = "Tag"
-    local not_staged = false
-    local highlight_group_not_active = "Keyword"
-
     local highlight_from = 0
     local highlight_to = 0
     for _, tab in ipairs(tabs) do
@@ -230,20 +201,9 @@ vim.api.nvim_create_user_command("Branch", function()
     vim.api.nvim_buf_add_highlight(window_buffer, -1, 'Todo', 0, 0, -1)
     vim.api.nvim_buf_add_highlight(window_buffer, -1, 'Title', 2, highlight_from, highlight_to)
 
-    -- Apply highlights to each line of branches
-    for i = 4, #lines - 1 do -- Start from line 2 to skip top padding
-        local is_active = string.find(lines[i], '*') or string.find(lines[i], 'modified')
-        if string.find(lines[i], 'not staged') then
-            untracked_line_number = i
-            not_staged = true
-        end
-        if is_active then
-            vim.api.nvim_buf_add_highlight(window_buffer, -1,
-                not_staged and highlight_group_not_active or highlight_group, i - 1, 0, -1)
-        end
-    end
-
     add_buffer_keymaps()
+
+    active_tab.on_buffer_load(lines, window_buffer)
 end, {
     nargs = '*',
 })
