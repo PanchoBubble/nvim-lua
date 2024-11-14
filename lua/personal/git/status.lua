@@ -139,7 +139,7 @@ local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'pop', "<cmd>BranchResetAll<CR>",
         { noremap = true, silent = true })
 
-    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'pop', "<cmd>BranchResetAll<CR>",
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-P>', "<cmd>BranchPush<CR>",
         { noremap = true, silent = true })
 end
 
