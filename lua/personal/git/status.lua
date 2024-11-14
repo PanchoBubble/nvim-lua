@@ -1,5 +1,9 @@
 local not_staged_line_number = 0
 
+local function is_path_format(str)
+    return str:match("^[%a%d_]+[:\\/]") or str:match("^[\\/]")
+end
+
 local function clean_file_path(branch_string)
     local clean_string = branch_string:gsub("modified:", "")
     clean_string = clean_string:gsub("new file:", "")
@@ -9,13 +13,14 @@ end
 vim.api.nvim_create_user_command('BranchFileToggleStaged', function()
     local line = vim.api.nvim_get_current_line()
     local buff_row = vim.api.nvim_win_get_cursor(0)[1]
-    local add = buff_row > not_staged_line_number
+    local add = not_staged_line_number > 0 and buff_row > not_staged_line_number
 
-    local command = add and "Git add" or "Git reset"
+    local command = add and "Git add" or "silent Git reset"
     local file_path = clean_file_path(line)
-    vim.print(file_path)
 
-    if file_path then
+    local is_path = is_path_format(file_path)
+
+    if file_path and is_path then
         vim.cmd(command .. " ./" .. file_path)
         vim.cmd("close")
         vim.cmd("Branch")
@@ -39,8 +44,7 @@ local function add_highlights(lines, window_buffer)
         return
     end
 
-    print(window_buffer, lines)
-
+    not_staged_line_number = 0
     -- Apply highlights to each line of branches
     for i = 4, #lines - 1 do -- Start from line 2 to skip top padding
         local add_color = false
@@ -88,7 +92,7 @@ vim.api.nvim_create_user_command('BranchAddAll', function()
 end, {})
 
 vim.api.nvim_create_user_command('BranchResetAll', function()
-    vim.cmd("Git reset .")
+    vim.cmd("silent Git reset .")
     vim.cmd("BranchToggle")
 end, {})
 
@@ -114,6 +118,11 @@ vim.api.nvim_create_user_command('BranchCommit', function()
     vim.cmd("Git commit")
 end, {})
 
+vim.api.nvim_create_user_command('BranchPush', function()
+    vim.cmd("Git push")
+    vim.cmd("BranchToggle")
+end, {})
+
 local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'c', "<cmd>BranchCommit<CR>",
         { noremap = true, silent = true })
@@ -125,6 +134,9 @@ local function add_keymaps(window_buffer)
         { noremap = true, silent = true })
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 's', "<cmd>BranchResetAll<CR>",
+        { noremap = true, silent = true })
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'pop', "<cmd>BranchResetAll<CR>",
         { noremap = true, silent = true })
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'pop', "<cmd>BranchResetAll<CR>",

@@ -1,3 +1,7 @@
+local function clean_branch_name(branch_string)
+    return branch_string:match("%s*(.+)$")
+end
+
 vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
     local line = vim.api.nvim_get_current_line()
     local buff_row = vim.api.nvim_win_get_cursor(0)[1]
@@ -7,7 +11,7 @@ vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
         return
     end
 
-    local branch_name = line:match("%s*(.+)$")  -- Extract branch name from line
+    local branch_name = clean_branch_name(line)
     if branch_name then
         vim.cmd("Git checkout " .. branch_name) -- Checkout the selected branch
         vim.cmd("close")
