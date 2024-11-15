@@ -128,6 +128,7 @@ end, {})
 vim.api.nvim_create_user_command('BranchFetch', function()
     vim.cmd("silent Git fetch")
     vim.cmd("BranchToggle")
+    vim.print("Fetched origin")
 end, {})
 
 local function add_keymaps(window_buffer)

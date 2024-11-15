@@ -31,3 +31,5 @@ vim.api.nvim_create_user_command("GitCheckoutNewBranch",
         end)
     end,
     {})
+
+vim.keymap.set("n", "<leader>gp", "<cmd>Git pull --no-edit<CR>")
