@@ -2,6 +2,19 @@ local function clean_branch_name(branch_string)
     return branch_string:match("%s*(.+)$")
 end
 
+local docs = [[
+*branch-management*                             *branch-management*
+
+==============================================================================
+** Branch Management **
+==============================================================================
+
+      <CR> or <Enter>      Toggle stage/unstage branch
+      a                    `git add .`
+      ra                   `git reset .`
+
+]]
+
 vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
     local line = vim.api.nvim_get_current_line()
     local buff_row = vim.api.nvim_win_get_cursor(0)[1]
@@ -40,8 +53,34 @@ local function add_highlights(lines, window_buffer)
 end
 
 
+vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
+end, {})
+
+vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
+    local line = vim.api.nvim_get_current_line()
+    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
+    local first_char = string.sub(line, 1, 1)
+    local line_length = string.len(line)
+    if line_length < 2 or first_char == "*" or first_char == "-" or buff_row < 3 then
+        return
+    end
+
+    local branch_name = clean_branch_name(line)
+    if branch_name then
+        vim.cmd("silent Git checkout " .. branch_name) -- Checkout the selected branch
+        vim.cmd("BranchToggle")
+    end
+end, {})
+
+
+local function add_keymaps(window_buffer)
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'co', "<cmd>BranchCheckoutCurrentLine<CR>",
+        { noremap = true, silent = true })
+end
+
 local function on_buffer_load(lines, window_buffer)
     add_highlights(lines, window_buffer)
+    add_keymaps(window_buffer)
 end
 
 local local_branches = {
@@ -50,6 +89,7 @@ local local_branches = {
     on_enter = "BranchCheckoutCurrentLine",
     header = "Branches - Local",
     on_buffer_load = on_buffer_load,
+    docs = docs,
 }
 
 local remote_branches = {
@@ -58,6 +98,7 @@ local remote_branches = {
     on_enter = "BranchCheckoutCurrentLine",
     header = "Branches - Remote",
     on_buffer_load = on_buffer_load,
+    docs = docs,
 }
 
 local M = {}

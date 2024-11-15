@@ -129,9 +129,6 @@ local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'c', "<cmd>BranchCommit<CR>",
         { noremap = true, silent = true })
 
-    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'c', "<cmd>BranchCommit<CR>",
-        { noremap = true, silent = true })
-
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'a', "<cmd>BranchAddAll<CR>",
         { noremap = true, silent = true })
 
@@ -156,6 +153,24 @@ local function on_buffer_load(lines, window_buffer)
     add_keymaps(window_buffer)
 end
 
+local docs = [[
+*status-management*                             *status-management*
+
+==============================================================================
+** Status Management **
+==============================================================================
+
+      <CR> or <Enter>      Toggle stage/unstage branch
+      c                    `git commit`
+      a                    `git add .`
+      ra                   `git reset .`
+      s                    `git reset .`
+      pop                  `git reset .`
+      <s-P>                `git push`
+      <s-F>                `git fetch`
+
+]]
+
 -- Define and return module table
 local M = {}
 M.label = "Status"
@@ -163,5 +178,6 @@ M.command = "git status"
 M.on_enter = "BranchFileToggleStaged"
 M.header = "Status"
 M.on_buffer_load = on_buffer_load
+M.docs = docs
 
 return M

@@ -59,6 +59,9 @@ end, {
 
 local function add_header()
     local header = active_tab.header
+    if active_tab.docs then
+        header = header .. " | [?] Docs"
+    end
     local padding_spaces = "-"
     local line_padding = math.floor(((view_width - #header) / 2))
     local padded_header = string.rep(padding_spaces, line_padding) .. header .. string.rep(padding_spaces, line_padding)
@@ -76,6 +79,14 @@ end
 
 
 
+vim.api.nvim_create_user_command('BranchDocs', function()
+    if active_tab.docs == nil then
+        return
+    end
+
+    vim.print(active_tab.docs)
+end, {})
+
 local function add_buffer_keymaps()
     if window_buffer == nil then
         return
@@ -87,6 +98,10 @@ local function add_buffer_keymaps()
             "<cmd>BranchToggle " .. tostring(tab.value) .. "<CR>",
             { noremap = true, silent = true })
     end
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '?',
+        "<cmd>BranchDocs<CR>",
+        { noremap = true, silent = true })
 
     -- Define action on <CR>
     local command = "<cmd>" .. active_tab.on_enter .. "<CR>"
