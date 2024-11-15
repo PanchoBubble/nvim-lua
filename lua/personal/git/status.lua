@@ -110,6 +110,11 @@ vim.api.nvim_create_user_command('BranchStashCurrentLine', function()
     vim.cmd("BranchToggle")
 end, {})
 
+vim.api.nvim_create_user_command('BranchStashAll', function()
+    vim.cmd("Git stash")
+    vim.cmd("BranchToggle")
+end, {})
+
 vim.api.nvim_create_user_command('BranchCommit', function()
     vim.cmd("close")
     vim.cmd("Git commit")
@@ -135,10 +140,13 @@ local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'ra', "<cmd>BranchResetAll<CR>",
         { noremap = true, silent = true })
 
-    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 's', "<cmd>BranchResetAll<CR>",
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 's', "<cmd>BranchStashCurrentLine<CR>",
         { noremap = true, silent = true })
 
-    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'pop', "<cmd>BranchResetAll<CR>",
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-S>', "<cmd>BranchStashAll<CR>",
+        { noremap = true, silent = true })
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'pop', "<cmd>BranchStashPop<CR>",
         { noremap = true, silent = true })
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-P>', "<cmd>BranchPush<CR>",
@@ -164,8 +172,9 @@ local docs = [[
       c                    `git commit`
       a                    `git add .`
       ra                   `git reset .`
-      s                    `git reset .`
-      pop                  `git reset .`
+      s                    `git stash <file>`
+      <s-S>                `git stash`
+      pop                  `git stash pop` 
       <s-P>                `git push`
       <s-F>                `git fetch`
 
