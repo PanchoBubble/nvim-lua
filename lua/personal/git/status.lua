@@ -131,6 +131,13 @@ vim.api.nvim_create_user_command('BranchFetch', function()
     vim.print("Fetched origin")
 end, {})
 
+vim.api.nvim_create_user_command('BranchPull', function()
+    vim.print("Pulling")
+    vim.cmd("silent Git pull --no-edit")
+    vim.cmd("BranchToggle")
+    vim.print("Pulled origin")
+end, {})
+
 local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'c', "<cmd>BranchCommit<CR>",
         { noremap = true, silent = true })
@@ -147,13 +154,16 @@ local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-S>', "<cmd>BranchStashAll<CR>",
         { noremap = true, silent = true })
 
-    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'pop', "<cmd>BranchStashPop<CR>",
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<leader>p', "<cmd>BranchStashPop<CR>",
         { noremap = true, silent = true })
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-P>', "<cmd>BranchPush<CR>",
         { noremap = true, silent = true })
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-F>', "<cmd>BranchFetch<CR>",
+        { noremap = true, silent = true })
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'p', "<cmd>BranchPull<CR>",
         { noremap = true, silent = true })
 end
 
@@ -175,9 +185,10 @@ local docs = [[
       ra                   `git reset .`
       s                    `git stash <file>`
       <s-S>                `git stash`
-      pop                  `git stash pop` 
+      <leader>p            `git stash pop`
       <s-P>                `git push`
       <s-F>                `git fetch`
+      p                    `git pull --no-edit`
 
 ]]
 
