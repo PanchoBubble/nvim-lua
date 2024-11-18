@@ -36,7 +36,6 @@ local function get_active_tab(value)
 end
 
 vim.api.nvim_create_user_command('BranchToggle', function(view)
-    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
     local tab_number = view.args
     if tab_number then
         active_tab = get_active_tab(tab_number) or tabs[1]
@@ -182,8 +181,7 @@ vim.api.nvim_create_user_command("Branch", function()
     -- Split output into lines
     format_and_set_lines(branches)
 
-    local row = math.floor((vim.o.lines - view_height) / 2)
-    local col = math.floor((vim.o.columns - view_width) / 2)
+    -- Ensure the row is within the bounds of the screen
 
     add_header()
 
@@ -193,11 +191,14 @@ vim.api.nvim_create_user_command("Branch", function()
     -- Set buffer content
     vim.api.nvim_buf_set_lines(window_buffer, 0, -1, false, lines)
 
+    local row = math.max(math.floor((vim.o.lines - view_height) / 2), 3)
+    local col = math.floor((vim.o.columns - view_width) / 2)
+
     -- Create floating window with buffer
     floating_window = vim.api.nvim_open_win(window_buffer, true, {
         relative = 'editor',
         width = view_width,
-        height = view_height,
+        height = math.min(view_height, vim.o.lines - 10),
         row = row,
         col = col,
         style = 'minimal',

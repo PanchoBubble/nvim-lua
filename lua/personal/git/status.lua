@@ -138,6 +138,22 @@ vim.api.nvim_create_user_command('BranchPull', function()
     vim.print("Pulled origin")
 end, {})
 
+vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
+    local line = vim.api.nvim_get_current_line()
+    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
+    local first_char = string.sub(line, 1, 1)
+    local line_length = string.len(line)
+    if line_length < 2 or first_char == "*" or first_char == "-" or buff_row < 3 then
+        return
+    end
+
+    local file_path = clean_file_path(line)
+    if file_path then
+        vim.cmd("silent Git checkout " .. file_path)
+        vim.cmd("BranchToggle")
+    end
+end, {})
+
 local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'c', "<cmd>BranchCommit<CR>",
         { noremap = true, silent = true })
@@ -164,6 +180,9 @@ local function add_keymaps(window_buffer)
         { noremap = true, silent = true })
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'p', "<cmd>BranchPull<CR>",
+        { noremap = true, silent = true })
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<leader>co', "<cmd>BranchCheckoutCurrentLine<CR>",
         { noremap = true, silent = true })
 end
 
