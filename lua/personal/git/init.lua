@@ -221,6 +221,9 @@ vim.api.nvim_create_user_command("Branch", function()
     add_buffer_keymaps()
 
     active_tab.on_buffer_load(lines, window_buffer)
+
+    vim.api.nvim_buf_set_option(window_buffer, "modifiable", false)
+    vim.api.nvim_buf_set_option(window_buffer, "readonly", true)
 end, {
     nargs = '*',
 })
