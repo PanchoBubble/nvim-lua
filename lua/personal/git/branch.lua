@@ -58,12 +58,29 @@ vim.api.nvim_create_user_command('BranchDeleteCurrentLine', function()
     end
 end, {})
 
+vim.api.nvim_create_user_command('BranchMergeCurrentLine', function()
+    local line = vim.api.nvim_get_current_line()
+    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
+    local first_char = string.sub(line, 1, 1)
+    local line_length = string.len(line)
+    if line_length < 2 or first_char == "*" or first_char == "-" or buff_row < 3 then
+        return
+    end
+    local branch_name = clean_branch_name(line)
+    if branch_name then
+        vim.cmd("Git merge " .. branch_name) -- Delete the selected branch
+        vim.cmd("BranchToggle")
+    end
+end, {})
 
 local function add_keymaps(window_buffer, local_branches)
     if local_branches then
         vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-D>', "<cmd>BranchDeleteCurrentLine<CR>",
             { noremap = true, silent = true })
     end
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<s-M>', "<cmd>BranchMergeCurrentLine<CR>",
+        { noremap = true, silent = true })
 end
 
 local function on_buffer_load(lines, window_buffer, local_branches)
@@ -84,6 +101,7 @@ local docs_local = [[
 
       <CR> or <Enter>      Toggle stage/unstage branch
       <s-D>                `git branch -D <cursor line>`
+      <s-M>                `git merge <cursor line>`
 
 ]]
 
@@ -95,6 +113,7 @@ local docs_remote = [[
 ==============================================================================
 
       <CR> or <Enter>      Toggle stage/unstage branch
+      <s-M>                `git merge <cursor line>`
 
 ]]
 
