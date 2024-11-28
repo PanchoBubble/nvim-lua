@@ -222,8 +222,12 @@ vim.api.nvim_create_user_command("Branch", function()
 
     active_tab.on_buffer_load(lines, window_buffer)
 
-    vim.api.nvim_buf_set_option(window_buffer, "modifiable", false)
+    -- Restrict the buffer in the floating window
     vim.api.nvim_buf_set_option(window_buffer, "readonly", true)
+    vim.api.nvim_buf_set_option(window_buffer, "modifiable", false)                     -- Prevent editing
+    vim.api.nvim_buf_set_option(window_buffer, "bufhidden", "hide")                     -- Handle close behavior
+    vim.api.nvim_win_set_option(floating_window, "number", false)                         -- Disable line numbers
+    vim.api.nvim_win_set_option(floating_window, "relativenumber", false)                 -- Disable relative line numbers
 end, {
     nargs = '*',
 })

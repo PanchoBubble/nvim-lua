@@ -154,6 +154,69 @@ vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
     end
 end, {})
 
+vim.api.nvim_create_user_command('BranchDiffsplit', function()
+    -- Get the current line
+    local line = vim.api.nvim_get_current_line()
+    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
+
+    -- Check for invalid lines
+    local first_char = string.sub(line, 1, 1)
+    local line_length = string.len(line)
+    if line_length < 2 or first_char == "*" or first_char == "-" or buff_row < 3 then
+        print("Invalid line for diffsplit.")
+        return
+    end
+
+    -- Clean the file path (assuming a clean_file_path helper exists)
+    local file_path = clean_file_path(line)
+    if not file_path then
+        print("Could not extract file path.")
+        return
+    end
+
+    -- Close the floating window (find its ID and close it)
+    local win_id = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_close(win_id, true)
+
+    vim.defer_fn(function()
+        -- Perform diffsplit in the new buffer
+        vim.cmd("edit " .. file_path)
+
+        -- Perform the diffsplit
+        vim.cmd("Gvdiffsplit")
+    end, 100)
+end, {})
+
+vim.api.nvim_create_user_command('BranchOpenFile', function()
+    -- Get the current line
+    local line = vim.api.nvim_get_current_line()
+    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
+
+    -- Check for invalid lines
+    local first_char = string.sub(line, 1, 1)
+    local line_length = string.len(line)
+    if line_length < 2 or first_char == "*" or first_char == "-" or buff_row < 3 then
+        print("Invalid line for file open.")
+        return
+    end
+
+    -- Clean the file path (assuming a clean_file_path helper exists)
+    local file_path = clean_file_path(line)
+    if not file_path then
+        print("Could not extract file path.")
+        return
+    end
+
+    -- Close the floating window (find its ID and close it)
+    local win_id = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_close(win_id, true)
+
+    vim.defer_fn(function()
+        -- Switch to the file in the main window (if needed)
+        vim.cmd("edit " .. file_path)
+    end, 50)
+end, {})
+
 local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'c', "<cmd>BranchCommit<CR>",
         { noremap = true, silent = true })
@@ -184,6 +247,12 @@ local function add_keymaps(window_buffer)
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<leader>co', "<cmd>BranchCheckoutCurrentLine<CR>",
         { noremap = true, silent = true })
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'd', "<cmd>BranchDiffsplit<CR>",
+        { noremap = true, silent = true })
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'o', "<cmd>BranchOpenFile<CR>",
+        { noremap = true, silent = true })
 end
 
 local function on_buffer_load(lines, window_buffer)
@@ -208,6 +277,8 @@ local docs = [[
       <s-P>                `git push`
       <s-F>                `git fetch`
       p                    `git pull --no-edit`
+      d                    `Gvdiffsplit <file>`
+      o                    `tabnew <file>`
 
 ]]
 

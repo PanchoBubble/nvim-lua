@@ -5,7 +5,7 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
         -- Use vim.ui.input to prompt the user
         vim.ui.input({ prompt = "Commit message: " }, function(input)
             if input then
-                local current_branch = vim.fn.systemlist("git branch --show-current")
+                local current_branch = vim.fn.systemlist("!git branch --show-current")
                     [1] -- Get current branch name
                 if not current_branch then
                     print("Error: Could not determine the current branch")
@@ -15,7 +15,21 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
                 -- Add, commit, and attempt to pull and push
                 vim.cmd("Git add .")
                 vim.cmd("Git commit -m '" .. input .. "'")
-                vim.cmd("Git pull --no-edit")
+                local pull_output = vim.fn.systemlist("!git pull --no-edit")
+                local has_conflicts = false
+
+                -- Check for conflicts in the pull output
+                for _, line in ipairs(pull_output) do
+                    if line:match("CONFLICT") then
+                        has_conflicts = true
+                        break
+                    end
+                end
+
+                if has_conflicts then
+                    print("Merge conflicts detected. Resolve conflicts before pushing.")
+                    return
+                end
 
                 -- Check if the branch exists on the remote
                 local remote_branch_exists = vim.fn.systemlist("Git ls-remote --heads origin " .. current_branch)
