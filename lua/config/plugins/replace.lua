@@ -1,5 +1,5 @@
 -- Replace
-return { {
+return {
     'nvim-pack/nvim-spectre',
     dependencies = {
         'nvim-lua/plenary.nvim'
@@ -7,5 +7,4 @@ return { {
     config = function()
         require('spectre').setup()
     end
-},
 }

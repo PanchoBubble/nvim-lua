@@ -1,3 +1,4 @@
+local handle_process_selection = require('personal.utils').handle_process_selection
 local not_staged_line_number = 0
 
 local function is_path_format(str)
@@ -11,22 +12,25 @@ local function clean_file_path(branch_string)
 end
 
 vim.api.nvim_create_user_command('BranchFileToggleStaged', function()
-    local line = vim.api.nvim_get_current_line()
     local buff_row = vim.api.nvim_win_get_cursor(0)[1]
     local add = not_staged_line_number > 0 and buff_row > not_staged_line_number
 
     local command = add and "Git add" or "silent Git reset"
-    local file_path = clean_file_path(line or " ")
 
-    local is_path = is_path_format(file_path or " ")
+    local function clean_string(str)
+        local file_path = clean_file_path(str or " ")
+        local is_path = is_path_format(file_path or " ")
+        if file_path and is_path then
+            return file_path
+        end
+    end
 
-    if file_path and is_path then
-        vim.cmd(command .. " ./" .. file_path)
+    handle_process_selection(command, clean_string, function()
         vim.cmd("BranchToggle")
         vim.defer_fn(function()
             vim.api.nvim_win_set_cursor(0, { buff_row, 0 })
         end, 50)
-    end
+    end)
 end, {})
 
 local function add_highlights(lines, window_buffer)
@@ -139,19 +143,9 @@ vim.api.nvim_create_user_command('BranchPull', function()
 end, {})
 
 vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
-    local line = vim.api.nvim_get_current_line()
-    local buff_row = vim.api.nvim_win_get_cursor(0)[1]
-    local first_char = string.sub(line, 1, 1)
-    local line_length = string.len(line)
-    if line_length < 2 or first_char == "*" or first_char == "-" or buff_row < 3 then
-        return
-    end
-
-    local file_path = clean_file_path(line)
-    if file_path then
-        vim.cmd("silent Git checkout " .. file_path)
+    handle_process_selection("Git checkout", clean_file_path, function()
         vim.cmd("BranchToggle")
-    end
+    end)
 end, {})
 
 vim.api.nvim_create_user_command('BranchDiffsplit', function()
@@ -248,10 +242,16 @@ local function add_keymaps(window_buffer)
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', '<leader>co', "<cmd>BranchCheckoutCurrentLine<CR>",
         { noremap = true, silent = true })
 
+    vim.api.nvim_buf_set_keymap(window_buffer, 'v', '<leader>co', "<cmd>BranchCheckoutCurrentLine<CR>",
+        { noremap = true, silent = true })
+
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'd', "<cmd>BranchDiffsplit<CR>",
         { noremap = true, silent = true })
 
     vim.api.nvim_buf_set_keymap(window_buffer, 'n', 'o', "<cmd>BranchOpenFile<CR>",
+        { noremap = true, silent = true })
+
+    vim.api.nvim_buf_set_keymap(window_buffer, 'v', '<CR>', "<cmd>BranchFileToggleStaged<CR>",
         { noremap = true, silent = true })
 end
 
@@ -279,7 +279,7 @@ local docs = [[
       p                    `git pull --no-edit`
       d                    `Gvdiffsplit <file>`
       o                    `tabnew <file>`
-
+      <leader>co           `git checkout <file>`
 ]]
 
 -- Define and return module table

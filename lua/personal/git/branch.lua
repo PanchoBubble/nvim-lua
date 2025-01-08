@@ -1,7 +1,7 @@
+local handle_process_selection = require('personal.utils').handle_process_selection
 local function clean_branch_name(branch_string)
     return branch_string:match("%s*(.+)$")
 end
-
 
 vim.api.nvim_create_user_command('BranchCheckoutCurrentLine', function()
     local line = vim.api.nvim_get_current_line()
@@ -40,9 +40,6 @@ local function add_highlights(lines, window_buffer)
     end
 end
 
-
-
-
 vim.api.nvim_create_user_command('BranchDeleteCurrentLine', function()
     local line = vim.api.nvim_get_current_line()
     local buff_row = vim.api.nvim_win_get_cursor(0)[1]
@@ -59,40 +56,9 @@ vim.api.nvim_create_user_command('BranchDeleteCurrentLine', function()
 end, {})
 
 vim.api.nvim_create_user_command('BranchDeleteCurrentLine', function()
-    -- Helper function to process a line
-    local function process_line(line, buff_row)
-        local first_char = string.sub(line, 1, 1)
-        local line_length = string.len(line)
-        if line_length < 2 or first_char == "*" or first_char == "-" or buff_row < 3 then
-            return
-        end
-        local branch_name = clean_branch_name(line)
-        if branch_name then
-            vim.cmd("Git branch -D " .. branch_name)                                                                     -- Delete the selected branch
-        end
-    end
-
-    -- Check for visual selection
-    local mode = vim.fn.mode()
-    if mode == "v" or mode == "V" or mode == "" then
-        -- Visual mode: Get selected lines
-        local start_pos = vim.fn.getpos("v")[2]
-        local end_pos = vim.fn.getpos(".")[2]
-        local lines = vim.api.nvim_buf_get_lines(0, start_pos - 1, end_pos, false)
-
-        -- Process each selected line
-        for i, line in ipairs(lines) do
-            local buff_row = start_pos + i - 1
-            process_line(line, buff_row)
-        end
-    else
-        -- No selection: Process the current line
-        local line = vim.api.nvim_get_current_line()
-        local buff_row = vim.api.nvim_win_get_cursor(0)[1]
-        process_line(line, buff_row)
-    end
-
-    vim.cmd("BranchToggle")
+    handle_process_selection("Git branch -D", clean_branch_name, function()
+        vim.cmd("BranchToggle")
+    end)
 end, {})
 
 local function add_keymaps(window_buffer, local_branches)

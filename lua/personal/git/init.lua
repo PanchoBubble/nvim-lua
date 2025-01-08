@@ -76,8 +76,6 @@ local function add_header()
     table.insert(lines, 4, "")
 end
 
-
-
 vim.api.nvim_create_user_command('BranchDocs', function()
     if active_tab.docs == nil then
         return
@@ -116,7 +114,6 @@ local function add_buffer_keymaps()
     end
 
     ------------------------------------------
-    ---
     if floating_window == nil then
         return
     end
@@ -223,11 +220,12 @@ vim.api.nvim_create_user_command("Branch", function()
     active_tab.on_buffer_load(lines, window_buffer)
 
     -- Restrict the buffer in the floating window
-    vim.api.nvim_buf_set_option(window_buffer, "readonly", true)
-    vim.api.nvim_buf_set_option(window_buffer, "modifiable", false)                     -- Prevent editing
-    vim.api.nvim_buf_set_option(window_buffer, "bufhidden", "hide")                     -- Handle close behavior
-    vim.api.nvim_win_set_option(floating_window, "number", false)                         -- Disable line numbers
-    vim.api.nvim_win_set_option(floating_window, "relativenumber", false)                 -- Disable relative line numbers
+    vim.bo[window_buffer].readonly = true          -- Make the buffer read-only
+    vim.bo[window_buffer].modifiable = false       -- Prevent editing
+    vim.bo[window_buffer].bufhidden = "hide"       -- Handle close behavior
+
+    vim.wo[floating_window].number = false         -- Disable line numbers
+    vim.wo[floating_window].relativenumber = false -- Disable relative line numbers
 end, {
     nargs = '*',
 })

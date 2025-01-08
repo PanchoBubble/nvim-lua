@@ -14,4 +14,8 @@ return {
 
     -- Uncommited
     { "mhinz/vim-signify" },
+
+    -- Mustache
+    { 'mustache/vim-mustache-handlebars' }
+
 }
