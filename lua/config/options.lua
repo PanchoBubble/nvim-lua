@@ -41,7 +41,7 @@ vim.g.loaded_netrwPlugin = 1 -- set termguicolors to enable highlight groups
 
 vim.opt.termguicolors = true -- empty setup using defaults
 
-vim.opt.hidden = true
+-- vim.opt.hidden = true
 vim.opt.updatetime = 300
 
 vim.opt.shortmess = vim.opt.shortmess + 'c'
