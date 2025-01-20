@@ -46,19 +46,14 @@ return {
             "b0o/SchemaStore.nvim",
         },
         config = function()
-            require("neodev").setup {
-                -- library = {
-                --   plugins = { "nvim-dap-ui" },
-                --   types = true,
-                -- },
-            }
-
+            require("neodev").setup()
             local lspconfig = require('lspconfig')
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
             require('mason').setup({})
             require('mason-lspconfig').setup({
+                automatic_installation = true,
                 ensure_installed = {
                     'ts_ls',
                     'pylsp',
@@ -66,7 +61,7 @@ return {
                     'biome',
                     'gopls',
                     'rust_analyzer',
-                    -- 'eslint',
+                    'eslint',
                     'html',
                     'denols',
                     'htmx',
@@ -146,6 +141,8 @@ return {
             require('conform').setup({
                 formatters_by_ft = {
                     mustache = 'djlint',
+                    javascript = require('conform').formatters.biome, -- Use `require('conform').formatters.biome`
+                    typescript = require('conform').formatters.biome,
                 },
             })
         end,
