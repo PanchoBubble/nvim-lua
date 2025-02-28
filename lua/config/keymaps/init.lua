@@ -5,4 +5,4 @@ require('config.keymaps.telescope-mappings')
 require('config.keymaps.other-mappings')
 require('config.keymaps.personal-mappings')
 require('config.keymaps.git-mappings')
-
+require('config.keymaps.gp-mappings')

@@ -16,6 +16,6 @@ return {
     { "mhinz/vim-signify" },
 
     -- Mustache
-    { 'mustache/vim-mustache-handlebars' }
+    { 'mustache/vim-mustache-handlebars' },
 
 }

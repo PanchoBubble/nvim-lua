@@ -1,4 +1,13 @@
 vim.g.mapleader = " "
+local env_file = vim.fn.expand("~/.config/nvim/.env")
+if vim.fn.filereadable(env_file) == 1 then
+  for line in io.lines(env_file) do
+    local key, value = line:match("([^=]+)=(.+)")
+    if key and value then
+      vim.fn.setenv(key, value)
+    end
+  end
+end
 
 local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then

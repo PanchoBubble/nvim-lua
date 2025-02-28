@@ -60,6 +60,7 @@ return {
                     'luau_lsp',
                     'biome',
                     'gopls',
+                    'svelte',
                     'rust_analyzer',
                     'eslint',
                     'html',
@@ -92,6 +93,7 @@ return {
                                     enable = true,
                                     mode = "all"
                                 },
+                                format = false
                             }
                         })
                     end,
@@ -140,9 +142,11 @@ return {
 
             require('conform').setup({
                 formatters_by_ft = {
-                    mustache = 'djlint',
-                    javascript = require('conform').formatters.biome, -- Use `require('conform').formatters.biome`
-                    typescript = require('conform').formatters.biome,
+                    typescript = { "prettierd", "prettier" },
+                    typescriptreact = { "prettierd", "prettier" },
+                    javascript = { "prettierd", "prettier" },
+                    javascriptreact = { "prettierd", "prettier" },
+                    mustache = { 'djlint' }
                 },
             })
         end,

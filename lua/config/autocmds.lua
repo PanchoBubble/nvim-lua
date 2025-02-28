@@ -1,19 +1,26 @@
 -- Create group to assign commands
 -- "clear = true" must be set to prevent loading an
 -- auto-command repeatedly every time a file is resourced
-local autocmd_group = vim.api.nvim_create_augroup("Custom auto-commands", { clear = true })
+-- local autocmd_group = vim.api.nvim_create_augroup("Custom auto-commands", { clear = true })
 
-vim.api.nvim_create_autocmd({ "BufWritePre" }, {
-    pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },
-    desc = "Auto-format JS files before saving",
-    callback = function()
-        -- local fileName = vim.api.nvim_buf_get_name(0)
-        if vim.fn.exists(':EslintFixAll') > 0 then
-            vim.cmd("EslintFixAll")
-        end
-    end,
-    group = autocmd_group,
-})
+-- vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+--     pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },
+--     desc = "Auto-format JS files before saving",
+--     callback = function()
+--         -- local fileName = vim.api.nvim_buf_get_name(0)
+--         if vim.fn.exists(':EslintFixAll') > 0 then
+--             vim.cmd("EslintFixAll")
+--         end
+--     end,
+--     group = autocmd_group,
+-- })
+
+-- vim.api.nvim_create_autocmd("BufWritePre", {
+--     pattern = { "*.js", "*.ts", "*.jsx", "*.tsx", "*.json", "*.css", "*.scss", "*.html", "*.md" },
+--     callback = function()
+--         require("conform").format()
+--     end,
+-- })
 
 --Create a command to run the formatter
 vim.api.nvim_create_user_command('JsonFormat', function()

@@ -1,7 +1,15 @@
 vim.keymap.set('n', '<leader>qf', "<cmd>lua vim.lsp.buf.code_action()<CR>")
+
 local function prettify()
     vim.lsp.buf.format()
     local filetype = vim.bo.filetype
+
+    local conform_files = { "typescript", "javascript", "json", "scss", "ccs", "html" }
+
+    if vim.tbl_contains(conform_files, filetype) then
+        require("conform").format()
+        return
+    end
     -- Check if Biome is installed and available
     if vim.fn.exists(':EslintFixAll') > 0 then
         vim.cmd("EslintFixAll")
@@ -15,7 +23,6 @@ local function prettify()
     else
         vim.lsp.buf.format()
     end
-    vim.cmd("w")
 end
 vim.keymap.set('n', '<leader><leader>', prettify)
 
