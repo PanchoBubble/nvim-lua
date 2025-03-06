@@ -1,80 +1,58 @@
 -- Buffer navigation
-vim.keymap.set("n", "<C-J>", "<C-W><C-J>")
-vim.keymap.set("n", "<C-K>", "<C-W><C-K>")
-vim.keymap.set("n", "<C-H>", "<C-W><C-H>")
-vim.keymap.set("n", "<C-L>", "<C-W><C-L>")
+vim.keymap.set("n", "<C-j>", "<C-w><C-j>")
+vim.keymap.set("n", "<C-k>", "<C-w><C-k>")
+vim.keymap.set("n", "<C-h>", "<C-w><C-h>")
+vim.keymap.set("n", "<C-l>", "<C-w><C-l>")
 
--- """""""" GO TO PREV FILE """"""""""""""
-vim.keymap.set("n", "<leader>bb", "<C-^><cr>")
+vim.keymap.set("n", "<leader>bb", "<C-^><CR>") -- Go to previous file
+vim.keymap.set("n", "gd", vim.lsp.buf.implementation) -- Go to implementation
 
--- """""""" GO TO IMPLEMENTATION """""""""
-vim.keymap.set("n", "gd", vim.lsp.buf.implementation)
+-- Copy current file path to clipboard
+local function copyFilePath()
+  vim.fn.setreg("+", vim.fn.expand("%"))
+  vim.notify("Copied file path to clipboard!")
+end
+vim.keymap.set("n", "<C-c>", copyFilePath)
 
-----------------------------------------------------
-vim.api.nvim_create_user_command("Cppath", function()
-    local path = vim.fn.expand("%")
-    vim.fn.setreg("+", path)
-    vim.notify('Copied "' .. path .. '" to the clipboard!')
-end, {})
-vim.keymap.set("n", "<C-C>", "<cmd>Cppath<CR>")
-----------------------------------------------------
+vim.keymap.set("n", "<leader>n", "<cmd>NvimTreeToggle<CR>") -- Toggle NvimTree
 
-vim.keymap.set("n", "<leader>n", "<cmd>NvimTreeToggle<CR>")
+vim.keymap.set("n", "gt", "<cmd>bnext<CR>") -- Go to next buffer
+vim.keymap.set("n", "gT", "<cmd>bprev<CR>") -- Go to previous buffer
 
-vim.keymap.set('n', 'gb', "<cmd>bnext<cr>")
-vim.keymap.set('n', 'gB', "<cmd>bprev<cr>")
-------
-vim.keymap.set("n", "gt", "<cmd>bnext<CR>")
-vim.keymap.set("n", "gT", "<cmd>bprev<CR>")
--- vim.keymap.set("n", "gt", "<cmd>tabnext<CR>")
--- vim.keymap.set("n", "gT", "<cmd>tabprevious<CR>")
------
-
-
--- Close current
-local function closeCurrentBuff()
+-- Close buffers, handling NvimTree
+local function closeBuffers(closeAll)
+  local isOpen = require("nvim-tree.view").is_visible()
+  if isOpen then
     vim.cmd("NvimTreeClose")
-    vim.cmd("bd")
-end
+  end
 
-vim.keymap.set('n', '<C-d>', closeCurrentBuff)
-vim.keymap.set('n', '<C-w>', closeCurrentBuff)
-
--- Close others
-local function closeAllBuffersButCurrentOne()
-    if string.find(vim.fn.expand('%'), 'NvimTree') then
-        vim.print("Cant close all while focusing on the NVIM TREE MF")
-    else
-        local was_open = require 'nvim-tree.view'.is_visible()
-
-        if was_open then
-            vim.cmd("NvimTreeClose")
-        end
-
-        local bufs = vim.api.nvim_list_bufs()
-
-        local current_buf = vim.api.nvim_get_current_buf()
-        for _, i in ipairs(bufs) do
-            if i ~= current_buf then
-                vim.api.nvim_buf_delete(i, {})
-            end
-        end
-
-        if was_open then
-            vim.cmd("NvimTreeOpen")
-            vim.cmd("bnext")
-        end
+  if closeAll then
+    local bufs = vim.api.nvim_list_bufs()
+    local currentBuf = vim.api.nvim_get_current_buf()
+    for _, buf in ipairs(bufs) do
+      if buf ~= currentBuf and vim.fn.bufname(buf) ~= vim.fn.expand("$NVIM_TREENAME") then
+        vim.api.nvim_buf_delete(buf, {})
+      end
     end
-end
-vim.keymap.set('n', '<CS-d>', closeAllBuffersButCurrentOne)
-vim.keymap.set('n', '<leader>Q', closeAllBuffersButCurrentOne)
-vim.keymap.set('n', '<leader>W', closeAllBuffersButCurrentOne)
+  else
+    vim.cmd("bd")
+  end
 
+  if isOpen then
+    vim.cmd("NvimTreeOpen")
+    vim.cmd("bnext")
+  end
+end
+
+vim.keymap.set("n", "<C-d>", function() closeBuffers(false) end) -- Close current buffer
+vim.keymap.set("n", "<C-w>", function() closeBuffers(false) end) -- Close current buffer
+vim.keymap.set("n", "<C-s>", function() closeBuffers(true) end) -- Close all buffers but current
+vim.keymap.set("n", "<leader>Q", function() closeBuffers(true) end) -- Close all buffers but current
+vim.keymap.set("n", "<leader>W", function() closeBuffers(true) end) -- Close all buffers but current
+
+-- Neovide specific keybindings
 if vim.g.neovide then
-  vim.keymap.set('n', '<D-s>', ':w<CR>') -- Save
-  vim.keymap.set('v', '<D-c>', '"+y')    -- Copy
-  vim.keymap.set('n', '<D-v>', '"+P')    -- Paste normal mode
-  vim.keymap.set('v', '<D-v>', '"+P')    -- Paste visual mode
-  vim.keymap.set('c', '<D-v>', '<C-R>+') -- Paste command mode
-  vim.keymap.set('i', '<D-v>', '<C-R>+') -- Paste insert mode
+  vim.keymap.set("n", "<D-s>", ":w<CR>")  -- Save
+  vim.keymap.set("v", "<D-c>", '"+y')    -- Copy
+  vim.keymap.set({ "n", "v", "c", "i" }, "<D-v>", '"+p') -- Paste in all modes
 end
