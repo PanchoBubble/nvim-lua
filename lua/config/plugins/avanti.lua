@@ -3,13 +3,25 @@ return {
     event = { "BufReadPost", "BufNewFile" }, -- Load when buffer is read or created
     lazy = true,
     version = "*",                           -- Always use latest stable release
+    init = function()
+        -- Create an augroup to manage Avante buffer-specific settings
+        vim.api.nvim_create_augroup("AvanteConfig", { clear = true })
+        vim.api.nvim_create_autocmd("FileType", {
+            group = "AvanteConfig",
+            pattern = "Avante",
+            callback = function()
+                -- Only apply Avante-specific settings in Avante buffers
+                vim.bo.buftype = "acwrite"
+            end
+        })
+    end,
     opts = {
         provider = "claude",
         cursor_applying_provider = "claude", -- Explicitly set for consistency
         auto_suggestions_provider = nil,     -- Disabled by default for performance
         suggestion = {
             debounce = 500,                  -- Delay before triggering suggestions (ms)
-            enabled = true,
+            enabled = false,
             max_lines = 500,                 -- Max lines to analyze for suggestions
         },
         claude = {
@@ -25,6 +37,10 @@ return {
             border = "rounded",
             width = 0.8,           -- 80% of screen width
             height = 0.8,          -- 80% of screen height
+        },
+        buffer = {
+            filetype = "Avante",   -- Set specific filetype for Avante buffers
+            preserve_mappings = true, -- Preserve existing buffer mappings
         },
         file_picker = "telescope", -- Use telescope as default file picker
     },

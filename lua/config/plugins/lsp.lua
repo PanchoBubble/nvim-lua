@@ -65,7 +65,7 @@ return {
                     'eslint',
                     'html',
                     'denols',
-                    'htmx',
+                    -- 'htmx',
                     'cssls',
                     'sqls'
                 },
@@ -116,9 +116,9 @@ return {
                 },
             }
 
-            lspconfig.htmx.setup({
-                filetypes = { "html", "htmldjango" }
-            })
+            -- lspconfig.htmx.setup({
+            --     filetypes = { "html", "htmldjango" }
+            -- })
 
             lspconfig.pylsp.setup({
                 capabilities = lsp_capabilities,
