@@ -19,6 +19,15 @@ vim.keymap.set("n", "<leader>n", "<cmd>NvimTreeToggle<CR>") -- Toggle NvimTree
 vim.keymap.set("n", "gt", "<cmd>bnext<CR>")                 -- Go to next buffer
 vim.keymap.set("n", "gT", "<cmd>bprev<CR>")                 -- Go to previous buffer
 
+-- Check if file is in git repository
+local function is_in_git_repo(filepath)
+    -- Get the absolute path
+    local abs_path = vim.fn.fnamemodify(filepath, ':p')
+    -- Try to get git root directory
+    local git_root = vim.fn.system('git -C ' .. vim.fn.shellescape(vim.fn.fnamemodify(abs_path, ':h')) .. ' rev-parse --show-toplevel 2>/dev/null')
+    return vim.v.shell_error == 0 and git_root ~= ""
+end
+
 -- Close buffers, handling NvimTree
 local function closeBuffers(closeAll)
     local isOpen = require("nvim-tree.view").is_visible()
@@ -38,8 +47,15 @@ local function closeBuffers(closeAll)
                 and vim.api.nvim_buf_is_loaded(buf) then
                 -- Check if buffer has unsaved changes
                 if vim.bo[buf].modified then
-                    local bufname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ':~:.')
-                    table.insert(unsaved_buffers, bufname)
+                    local bufname = vim.api.nvim_buf_get_name(buf)
+                    -- Only preserve changes for files in git repo
+                    if is_in_git_repo(bufname) then
+                        local display_name = vim.fn.fnamemodify(bufname, ':~:.')
+                        table.insert(unsaved_buffers, display_name)
+                    else
+                        -- Force close non-repo files with changes
+                        pcall(vim.api.nvim_buf_delete, buf, { force = true })
+                    end
                 else
                     -- Only delete if no unsaved changes
                     pcall(vim.api.nvim_buf_delete, buf, {})
@@ -50,8 +66,14 @@ local function closeBuffers(closeAll)
         -- For single buffer close
         local current_buf = vim.api.nvim_get_current_buf()
         if vim.bo[current_buf].modified then
-            local bufname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(current_buf), ':~:.')
-            table.insert(unsaved_buffers, bufname)
+            local bufname = vim.api.nvim_buf_get_name(current_buf)
+            if is_in_git_repo(bufname) then
+                local display_name = vim.fn.fnamemodify(bufname, ':~:.')
+                table.insert(unsaved_buffers, display_name)
+            else
+                -- Force close non-repo files with changes
+                vim.cmd("bd!")
+            end
         else
             vim.cmd("bd")
         end
@@ -62,7 +84,7 @@ local function closeBuffers(closeAll)
         vim.cmd("bnext")
     end
 
-    -- Notify about unsaved buffers
+    -- Notify about unsaved buffers (only for files in git repo)
     if #unsaved_buffers > 0 then
         local msg = "Unsaved buffers not closed:\n- " .. table.concat(unsaved_buffers, "\n- ")
         vim.notify(msg, vim.log.levels.WARN, {
