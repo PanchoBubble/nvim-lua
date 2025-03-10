@@ -26,21 +26,49 @@ local function closeBuffers(closeAll)
         vim.cmd("NvimTreeClose")
     end
 
+    local unsaved_buffers = {}
+
     if closeAll then
         local bufs = vim.api.nvim_list_bufs()
         local currentBuf = vim.api.nvim_get_current_buf()
         for _, buf in ipairs(bufs) do
-            if buf ~= currentBuf and vim.fn.bufname(buf) ~= vim.fn.expand("$NVIM_TREENAME") then
-                vim.api.nvim_buf_delete(buf, {})
+            -- Skip current buffer, NvimTree, and non-loaded buffers
+            if buf ~= currentBuf
+                and vim.fn.bufname(buf) ~= vim.fn.expand("$NVIM_TREENAME")
+                and vim.api.nvim_buf_is_loaded(buf) then
+                -- Check if buffer has unsaved changes
+                if vim.bo[buf].modified then
+                    local bufname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ':~:.')
+                    table.insert(unsaved_buffers, bufname)
+                else
+                    -- Only delete if no unsaved changes
+                    pcall(vim.api.nvim_buf_delete, buf, {})
+                end
             end
         end
     else
-        vim.cmd("bd")
+        -- For single buffer close
+        local current_buf = vim.api.nvim_get_current_buf()
+        if vim.bo[current_buf].modified then
+            local bufname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(current_buf), ':~:.')
+            table.insert(unsaved_buffers, bufname)
+        else
+            vim.cmd("bd")
+        end
     end
 
     if isOpen then
         vim.cmd("NvimTreeOpen")
         vim.cmd("bnext")
+    end
+
+    -- Notify about unsaved buffers
+    if #unsaved_buffers > 0 then
+        local msg = "Unsaved buffers not closed:\n- " .. table.concat(unsaved_buffers, "\n- ")
+        vim.notify(msg, vim.log.levels.WARN, {
+            title = "Buffer Close",
+            timeout = 5000
+        })
     end
 end
 

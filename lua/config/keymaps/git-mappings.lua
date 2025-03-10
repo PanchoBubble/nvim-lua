@@ -79,6 +79,26 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
         local buf, win = create_centered_floating_window("Commit Message")
         local commit_message = ""
 
+        -- Handle window leave and escape
+        vim.api.nvim_create_autocmd("BufLeave", {
+            buffer = buf,
+            once = true,
+            callback = function()
+                vim.schedule(function()
+                    if vim.api.nvim_win_is_valid(win) then
+                        vim.api.nvim_win_close(win, true)
+                        vim.notify("Commit cancelled", vim.log.levels.WARN)
+                    end
+                end)
+            end,
+        })
+
+        -- Add escape key mapping to cancel
+        vim.keymap.set("i", "<esc>", function()
+            vim.api.nvim_win_close(win, true)
+            vim.notify("Commit cancelled", vim.log.levels.WARN)
+        end, { buffer = buf, nowait = true })
+
         -- Set up the prompt callback
         vim.fn.prompt_setcallback(buf, function(input)
             if input and input ~= "" then
