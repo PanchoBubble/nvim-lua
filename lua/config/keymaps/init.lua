@@ -10,7 +10,6 @@ local tool_mappings = {
     'tree-mappings',        -- Nvim-tree with improved root handling
     'telescope-mappings',    -- Telescope fuzzy finder
     'git-mappings',         -- Git operations
-    'gp-mappings',          -- GPT integration
 }
 
 -- Custom mappings

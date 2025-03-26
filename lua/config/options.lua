@@ -25,14 +25,8 @@ vim.opt.scrolloff = 8
 vim.opt.signcolumn = "yes"
 vim.opt.isfname:append("@-@")
 
-vim.opt.updatetime = 50
-
 -- Give more space for displaying messages.
 vim.opt.cmdheight = 2
-
--- Having longer update time (default is 4000 ms = 4 s) leads to noticeable
--- delays and poor user experience.
-vim.opt.updatetime = 50
 
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1
@@ -40,9 +34,6 @@ vim.g.loaded_netrwPlugin = 1 -- set termguicolors to enable highlight groups
 
 
 vim.opt.termguicolors = true -- empty setup using defaults
-
--- vim.opt.hidden = true
-vim.opt.updatetime = 300
 
 vim.opt.shortmess = vim.opt.shortmess + 'c'
 
@@ -59,3 +50,67 @@ vim.g.blamer_enabled = true
 
 vim.o.sessionoptions = "buffers,curdir,folds,tabpages,winsize,localoptions"
 
+
+-- Performance related settings
+vim.opt.hidden = true
+vim.opt.history = 100
+vim.opt.lazyredraw = true
+vim.opt.synmaxcol = 240
+vim.opt.updatetime = 250
+vim.opt.timeoutlen = 400
+vim.opt.redrawtime = 1500
+vim.opt.ttimeoutlen = 10
+
+local disabled_built_ins = {
+    "netrw",
+    "netrwPlugin",
+    "netrwSettings",
+    "netrwFileHandlers",
+    "gzip",
+    "zip",
+    "zipPlugin",
+    "tar",
+    "tarPlugin",
+    "getscript",
+    "getscriptPlugin",
+    "vimball",
+    "vimballPlugin",
+    "2html_plugin",
+    "logipat",
+    "spellfile_plugin",
+    "matchit"
+}
+
+for _, plugin in pairs(disabled_built_ins) do
+    vim.g["loaded_" .. plugin] = 1
+end
+
+-- Use faster grep if available
+if vim.fn.executable('rg') == 1 then
+    vim.o.grepprg = 'rg --vimgrep --no-heading --smart-case'
+    vim.o.grepformat = '%f:%l:%c:%m'
+end
+
+
+-- LSP performance improvements
+vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
+    vim.lsp.handlers.hover, {
+        -- Avoid redundant redraw
+        focusable = false,
+        border = "rounded",
+    }
+)
+
+-- Debounce LSP document highlights
+local function debounce(ms, fn)
+    local timer = vim.loop.new_timer()
+    return function(...)
+        local argv = { ... }
+        timer:start(ms, 0, function()
+            timer:stop()
+            vim.schedule_wrap(fn)(unpack(argv))
+        end)
+    end
+end
+
+vim.lsp.handlers['textDocument/documentHighlight'] = debounce(150, vim.lsp.handlers['textDocument/documentHighlight'])

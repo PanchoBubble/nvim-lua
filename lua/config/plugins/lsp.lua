@@ -31,6 +31,7 @@ end
 return {
     {
         "neovim/nvim-lspconfig",
+        event = { "BufReadPre", "BufNewFile" }, -- Load only when buffer is opened
         dependencies = {
             "folke/neodev.nvim",
             "williamboman/mason.nvim",
@@ -46,26 +47,65 @@ return {
             "b0o/SchemaStore.nvim",
         },
         config = function()
+            -- Configure diagnostic updates to be less frequent
+            vim.diagnostic.config({
+                update_in_insert = false, -- disable diagnostics while typing
+                virtual_text = {
+                    spacing = 4,
+                    source = "if_many",
+                    prefix = '●',
+                },
+                severity_sort = true,
+                underline = true,
+                float = { border = "rounded" },
+            })
+
+            -- Add debounce for diagnostics
+            vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+                vim.lsp.diagnostic.on_publish_diagnostics,
+                {
+                    update_in_insert = false,
+                    virtual_text = {
+                        spacing = 4,
+                        source = "if_many",
+                    },
+                    delay = 300, -- Delay in milliseconds
+                }
+            )
+
             require("neodev").setup()
             local lspconfig = require('lspconfig')
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
-            require('mason').setup({})
+            require('mason').setup({
+                ui = {
+                    check_outdated_packages_on_open = false, -- Prevents checking on every open
+                    border = "none",
+                    icons = {
+                        package_installed = "✓",
+                        package_pending = "➜",
+                        package_uninstalled = "✗"
+                    }
+                }
+            })
             require('mason-lspconfig').setup({
                 automatic_installation = true,
+                -- Split servers into essential and non-essential
                 ensure_installed = {
+                    -- Essential (loaded immediately)
                     'ts_ls',
+                    'lua_ls',
+                    'eslint',
+
+                    -- Non-essential (loaded on demand)
                     'pylsp',
-                    'luau_lsp',
                     'biome',
                     'gopls',
                     'svelte',
                     'rust_analyzer',
-                    'eslint',
                     'html',
                     'denols',
-                    -- 'htmx',
                     'cssls',
                     'sqls'
                 },

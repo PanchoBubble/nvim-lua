@@ -15,15 +15,30 @@ return {
                 },
             },
             vimgrep_arguments = {
-                  'rg',
-                  '--color=never',
-                  '--no-heading',
-                  '--with-filename',
-                  '--line-number',
-                  '--column',
-                  '--smart-case',
-                  '--hidden',
+                'rg',
+                '--color=never',
+                '--no-heading',
+                '--with-filename',
+                '--line-number',
+                '--column',
+                '--smart-case',
+                '--hidden',
+                '--max-columns=150',
+                '--max-filesize=1M',
+            },
+            defaults = {
+                file_ignore_patterns = {
+                    "node_modules/",
+                    ".git/",
+                    "target/",
+                    "dist/",
+                    "build/"
                 },
+                cache_picker = {
+                    num_pickers = 5,
+                    limit_entries = 1000,
+                },
+            },
         }
     end,
 }

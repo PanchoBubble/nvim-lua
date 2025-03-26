@@ -18,10 +18,10 @@ return {
     opts = {
         provider = "claude",
         cursor_applying_provider = "claude", -- Explicitly set for consistency
-        auto_suggestions_provider = nil,     -- Disabled by default for performance
+        auto_suggestions_provider = "gemini", -- Use Gemini for suggestions
         suggestion = {
             debounce = 500,                  -- Delay before triggering suggestions (ms)
-            enabled = false,
+            enabled = true,                  -- Enable suggestions with Gemini
             max_lines = 500,                 -- Max lines to analyze for suggestions
         },
         claude = {
@@ -31,6 +31,15 @@ return {
             max_tokens = 4096,
             top_p = 0.95,      -- Add top_p for better response quality
             timeout = 60,      -- Add timeout in seconds
+        },
+        gemini = {
+            endpoint = "https://generativelanguage.googleapis.com",
+            -- model = "gemini-2.0-flash",
+            model = "gemini-2.0-flash-lite",
+            temperature = 0.1,
+            max_tokens = 2048,
+            top_p = 0.95,
+            timeout = 30,      -- Shorter timeout for faster suggestions
         },
         ui = {
             code_action_icon = "💡",
