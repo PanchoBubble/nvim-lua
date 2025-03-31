@@ -91,22 +91,8 @@ local function closeBuffers(closeAll)
                     -- Only preserve changes for files in git repo
                     if is_in_git_repo(bufname) then
                         local display_name = vim.fn.fnamemodify(bufname, ':~:.')
-                        -- For visible buffers with changes, try to reload and force close
-                        if not is_buffer_visible(buf) then
-                            vim.api.nvim_buf_call(buf, function()
-                                vim.cmd('e!')
-                                vim.cmd("bd!")
-                            end)
-                        end
                         table.insert(unsaved_buffers, display_name)
                     else
-                        -- For visible buffers with changes, try to reload and force close
-                        if is_buffer_visible(buf) then
-                            vim.api.nvim_buf_call(buf, function()
-                                vim.cmd('e!')
-                                vim.cmd("bd!")
-                            end)
-                        end
                         pcall(vim.api.nvim_buf_delete, buf, { force = true })
                     end
                 else

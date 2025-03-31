@@ -17,12 +17,12 @@ return {
     end,
     opts = {
         provider = "claude",
-        cursor_applying_provider = "claude", -- Explicitly set for consistency
+        cursor_applying_provider = "claude",  -- Explicitly set for consistency
         auto_suggestions_provider = "gemini", -- Use Gemini for suggestions
         suggestion = {
-            debounce = 500,                  -- Delay before triggering suggestions (ms)
-            enabled = true,                  -- Enable suggestions with Gemini
-            max_lines = 500,                 -- Max lines to analyze for suggestions
+            debounce = 500,                   -- Delay before triggering suggestions (ms)
+            enabled = true,                   -- Enable suggestions with Gemini
+            max_lines = 500,                  -- Max lines to analyze for suggestions
         },
         claude = {
             endpoint = "https://api.anthropic.com",
@@ -32,26 +32,25 @@ return {
             top_p = 0.95,      -- Add top_p for better response quality
             timeout = 60,      -- Add timeout in seconds
         },
-        gemini = {
-            endpoint = "https://generativelanguage.googleapis.com",
-            -- model = "gemini-2.0-flash",
-            model = "gemini-2.0-flash-lite",
-            temperature = 0.1,
-            max_tokens = 2048,
-            top_p = 0.95,
-            timeout = 30,      -- Shorter timeout for faster suggestions
-        },
+        -- gemini = {
+        --     endpoint = "https://generativelanguage.googleapis.com/v1beta",
+        --     model = "gemini-2.0-flash",
+        --     temperature = 0.1,
+        --     max_tokens = 2048,
+        --     top_p = 0.95,
+        --     timeout = 30, -- Shorter timeout for faster suggestions
+        -- },
         ui = {
             code_action_icon = "💡",
             border = "rounded",
-            width = 0.8,           -- 80% of screen width
-            height = 0.8,          -- 80% of screen height
+            width = 0.8,  -- 80% of screen width
+            height = 0.8, -- 80% of screen height
         },
         buffer = {
-            filetype = "Avante",   -- Set specific filetype for Avante buffers
+            filetype = "Avante",      -- Set specific filetype for Avante buffers
             preserve_mappings = true, -- Preserve existing buffer mappings
         },
-        file_picker = "telescope", -- Use telescope as default file picker
+        file_picker = "telescope",    -- Use telescope as default file picker
     },
     build = "make",
     dependencies = {
