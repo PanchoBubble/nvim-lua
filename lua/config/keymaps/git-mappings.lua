@@ -1,10 +1,13 @@
--- Function to create a centered floating window
-local function create_centered_floating_window(title)
-    local width = 60
-    local height = 1
+---@diagnostic disable: redefined-local
+
+-- Helper function to create a centered floating window
+-- Increased default height for prompts
+local function create_centered_floating_window(title, initial_height)
+    local width = math.floor(vim.o.columns * 0.6)
+    local height = math.max(initial_height or 5, 1) -- Default height 5, min 1
     local win_height = vim.o.lines
     local win_width = vim.o.columns
-    local row = math.floor((win_height - height) / 2 - 1)
+    local row = math.floor((win_height - height) / 2)
     local col = math.floor((win_width - width) / 2)
 
     local opts = {
@@ -17,175 +20,462 @@ local function create_centered_floating_window(title)
         border = "rounded",
         title = " " .. title .. " ",
         title_pos = "center",
+        -- Make window resizable if you want (optional)
+        -- zindex = 50,
     }
 
-    local buf = vim.api.nvim_create_buf(false, true)
+    local buf = vim.api.nvim_create_buf(false, true)      -- no file, scratch buffer
     local win = vim.api.nvim_open_win(buf, true, opts)
+    vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe') -- Close buffer when window closes
 
     -- Set window-local options
-    vim.wo[win].wrap = false
-    vim.bo[buf].buftype = "prompt"
+    vim.wo[win].wrap = false       -- Keep wrap off for prompts usually
+    vim.bo[buf].buftype = "prompt" -- Important for vim.fn.prompt_setcallback
+
+    -- Basic highlighting (optional)
+    vim.api.nvim_win_set_option(win, 'winhl', 'Normal:NormalFloat,FloatBorder:FloatBorder')
 
     return buf, win
 end
 
--- Function to execute git commands and handle errors
-local function execute_git_command(cmd, silent)
-    local output = vim.fn.systemlist(cmd)
-    local success = vim.v.shell_error == 0
+-- Refined helper function to execute shell commands synchronously
+-- Returns: success (boolean), output_lines (table), exit_code (number)
+local function execute_command(cmd, return_output, silent_execution)
+    -- vim.notify("Executing: " .. cmd, vim.log.levels.DEBUG) -- Optional debug
+    local output_lines = vim.fn.systemlist(cmd)
+    local exit_code = vim.v.shell_error
 
-    if not success and not silent then
-        -- Create a floating window for error display
-        local buf = vim.api.nvim_create_buf(false, true)
-        local width = math.min(120, vim.o.columns - 4)
-        local height = math.min(#output + 2, 20)
+    if exit_code ~= 0 and not silent_execution then
+        -- Display error in a floating window (or use vim.notify for simplicity)
+        local error_message = string.format("Command failed (code %d): %s", exit_code, cmd)
+        if return_output and #output_lines > 0 then
+            error_message = error_message .. "\nOutput:\n" .. table.concat(output_lines, "\n")
+        elseif #output_lines > 0 then
+            error_message = error_message .. "\nOutput:\n" .. table.concat(output_lines, "\n")
+        end
+        -- Option 1: Simple Notification
+        vim.notify(error_message, vim.log.levels.ERROR)
+        -- Option 2: Floating Window (using a simplified version)
+        -- local err_buf = vim.api.nvim_create_buf(false, true)
+        -- vim.api.nvim_buf_set_lines(err_buf, 0, -1, false, vim.split(error_message, "\n"))
+        -- vim.api.nvim_open_win(err_buf, true, {
+        --     relative = "editor", width = 80, height = 10, border = "rounded", title = "Git Error"
+        -- })
+        -- vim.api.nvim_buf_set_option(err_buf, 'modifiable', false)
 
-        local opts = {
-            relative = "editor",
-            width = width,
-            height = height,
-            row = math.floor((vim.o.lines - height) / 2),
-            col = math.floor((vim.o.columns - width) / 2),
-            style = "minimal",
-            border = "rounded",
-            title = " Git Error ",
-            title_pos = "center",
-        }
-
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
-        local win = vim.api.nvim_open_win(buf, true, opts)
-        vim.bo[buf].modifiable = false
-        vim.bo[buf].buftype = "nofile"
-
-        -- Close window on any key press
-        vim.keymap.set("n", "<space>", function()
-            vim.api.nvim_win_close(win, true)
-        end, { buffer = buf, nowait = true })
-        vim.keymap.set("n", "<esc>", function()
-            vim.api.nvim_win_close(win, true)
-        end, { buffer = buf, nowait = true })
-        vim.keymap.set("n", "q", function()
-            vim.api.nvim_win_close(win, true)
-        end, { buffer = buf, nowait = true })
+        return false, output_lines, exit_code
     end
 
-    return success, output
+    return exit_code == 0, output_lines, exit_code
 end
 
-vim.keymap.set("n", "<leader>ca", "<cmd>GitAddAndCommitAll<CR>")
+-- Function to get AI-generated commit title and description
+-- IMPORTANT: This function now ONLY reads the diff, it does NOT stage changes.
+local function get_ai_title_and_description(currentTitle)
+    vim.notify("Getting AI title and description...")
+    local api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key then
+        vim.notify("ANTHROPIC_API_KEY environment variable not set", vim.log.levels.ERROR)
+        return currentTitle, nil
+    end
 
+    -- Get staged diff ONLY. Rely on .gitignore to exclude node_modules etc.
+    -- Add --diff-filter to ignore deleted files if desired (or keep default)
+    local success, diff_output, exit_code = execute_command(
+        "git diff --cached --no-prefix --diff-filter=AMDRC", true, true) -- return output, silent execution
+
+    if not success and exit_code ~= 0 then                               -- Ignore exit code 0 which means success even if diff is empty
+        vim.notify("Failed to get git diff (code: " .. exit_code .. ")", vim.log.levels.ERROR)
+        return currentTitle, nil
+    end
+
+    if #diff_output == 0 then
+        vim.notify("No staged changes found to generate commit message from.", vim.log.levels.WARN)
+        vim.notify("Please stage the changes you want included first.", vim.log.levels.INFO)
+        return currentTitle, nil
+    end
+
+    local diff_content = table.concat(diff_output, "\n")
+    local max_diff_length = 15000 -- Adjust as needed
+    if #diff_content > max_diff_length then
+        diff_content = diff_content:sub(1, max_diff_length)
+        vim.notify("Diff content truncated to " .. max_diff_length .. " characters", vim.log.levels.WARN)
+    end
+
+    -- Prepare the prompt for Anthropic
+    local prompt_text = string.format([[
+Based on the following git diff of *staged* changes, please provide:
+1. A concise, conventional commit style title (e.g., "feat: Add X", "fix: Y", "refactor: Z"). Max 50 chars.
+2. A detailed description of the changes (what/why). Max 500 chars. Leave blank if title is self-explanatory.
+
+Format the response *exactly* as:
+Title: <commit title>
+Description: <description>
+
+Git diff:
+%s
+]], diff_content)
+
+    -- Escape the entire prompt text for the final JSON payload
+    local escaped_prompt = vim.json.encode(prompt_text)
+    if not escaped_prompt then
+        vim.notify("Failed to JSON encode the prompt.", vim.log.levels.ERROR)
+        return currentTitle, nil
+    end
+
+    -- Construct the JSON payload carefully
+    local json_payload = string.format(
+        '{"model":"claude-3-haiku-20240307","max_tokens":300,"messages":[{"role":"user","content":%s}]}',
+        escaped_prompt
+    )
+
+    -- Prepare the curl command using single quotes for the payload AND make it a single line
+    -- Escape the single quotes around the payload data '%s' -> \'%s\' because the outer string.format uses single quotes.
+    local curl_command = string.format(
+        'curl -s -X POST https://api.anthropic.com/v1/messages -H "x-api-key: %s" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d \'%s\'',
+        api_key, json_payload
+    )
+
+    vim.notify("Requesting AI commit message...", vim.log.levels.INFO)
+    -- Optional: Debug print the command BEFORE executing (remove API key if logging publicly)
+    -- print("DEBUG: Curl Command:", curl_command)
+
+    -- Execute curl command (silently, handle errors below)
+    local success_curl, response_lines, exit_code_curl = execute_command(curl_command, true, true)
+
+
+    vim.notify("Requesting AI commit message...", vim.log.levels.INFO)
+
+    -- Execute curl command (silently, handle errors below)
+    local success_curl, response_lines, exit_code_curl = execute_command(curl_command, true, true)
+
+    if not success_curl then
+        vim.notify("API call failed (curl exit code: " .. exit_code_curl .. ").", vim.log.levels.ERROR)
+        -- Attempt to parse response even on failure, might contain API error message
+        if #response_lines > 0 then
+            local response_text = table.concat(response_lines, "")
+            local success_decode, decoded = pcall(vim.json.decode, response_text)
+            if success_decode and decoded and decoded.error then
+                local api_error = decoded.error.message or vim.inspect(decoded.error)
+                vim.notify("API Error: " .. api_error, vim.log.levels.ERROR)
+            else
+                vim.notify("Raw API Response/Error: " .. response_text, vim.log.levels.WARN)
+            end
+        end
+        return currentTitle, nil
+    end
+
+    local response_text = table.concat(response_lines, "")
+    local success_decode, decoded = pcall(vim.json.decode, response_text)
+    if not success_decode then
+        vim.notify("Failed to parse API response JSON: " .. response_text, vim.log.levels.ERROR)
+        return currentTitle, nil
+    end
+
+    -- Check for API-level errors in the JSON response
+    if decoded.error then
+        local api_error = decoded.error.type .. ": " .. (decoded.error.message or vim.inspect(decoded.error))
+        vim.notify("API returned an error: " .. api_error, vim.log.levels.ERROR)
+        return currentTitle, nil
+    end
+
+    -- Correctly extract content from Claude Messages API response
+    local content = decoded.content and type(decoded.content) == 'table' and decoded.content[1] and
+        decoded.content[1].text
+    if not content then
+        vim.notify("Invalid API response format or empty content: " .. vim.inspect(decoded), vim.log.levels.ERROR)
+        return currentTitle, nil
+    end
+
+    -- Parse title and description more robustly
+    local title = content:match("^[Tt]itle:%s*(.-)\n")
+    local description = content:match("\n[Dd]escription:%s*(.*)")
+
+    -- Trim whitespace
+    title = title and title:match("^%s*(.-)%s*$")
+    description = description and description:match("^%s*(.-)%s*$")
+
+    if not title or title == "" then
+        vim.notify("AI response parsed, but no valid 'Title:' field found. Using placeholder.", vim.log.levels.WARN)
+        title = currentTitle -- Or maybe "AI Suggestion Failed"
+    else
+        -- Ensure title length is within limits
+        if #title > 50 then
+            title = string.sub(title, 1, 47) .. "..."
+            vim.notify("AI title truncated to 50 characters.", vim.log.levels.WARN)
+        end
+    end
+
+    if not description or description == "" then
+        vim.notify("AI Description field not found or empty.", vim.log.levels.INFO)
+        description = nil -- Explicitly set to nil
+    else
+        -- Optional: Truncate description if needed
+        -- if #description > 500 then description = description:sub(1, 497) .. "..." end
+    end
+
+    vim.notify("AI message generated.", vim.log.levels.INFO)
+    return title, description
+end
+
+-- Command: GitAddAndCommitAll
 vim.api.nvim_create_user_command("GitAddAndCommitAll",
     function()
-        local buf, win = create_centered_floating_window("Commit Message")
-        local commit_message = ""
+        -- 1. Stage all changes FIRST - required by the command name "All"
+        vim.notify("Staging all changes (git add .)...", vim.log.levels.INFO)
+        local success_add, _, exit_code_add = execute_command("git add .", false, false) -- Don't silence errors here
 
-        -- Handle window leave and escape
+        if not success_add and exit_code_add ~= 1 then                                   -- Fail on any error except 'nothing to add'
+            vim.notify("Failed to stage changes (git add .). Aborting.", vim.log.levels.ERROR)
+            return
+        end
+        if exit_code_add == 1 then
+            vim.notify("No new changes detected to stage.", vim.log.levels.WARN)
+            -- Check if *anything* is staged before proceeding
+            local success_status, status_lines, _ = execute_command("git status --porcelain", true, true)
+            local has_staged = false
+            if success_status then
+                for _, line in ipairs(status_lines) do
+                    if line:match("^[MARCD]") then
+                        has_staged = true; break;
+                    end
+                end
+            end
+            if not has_staged then
+                vim.notify("No changes staged. Nothing to commit.", vim.log.levels.WARN)
+                return -- Exit early
+            end
+            vim.notify("Proceeding with already staged changes.", vim.log.levels.INFO)
+        else
+            vim.notify("All changes staged successfully.", vim.log.levels.INFO)
+        end
+
+
+        -- 2. Prepare for commit message input
+        local buf, win = create_centered_floating_window("Commit Message (type 'ai' for suggestion)", 3) -- Start with height 3
+        local commit_message =
+        ""                                                                                               -- Will hold the final full message (title + desc)
+        local final_title =
+        ""                                                                                               -- Will hold just the title part
+
+        local close_prompt_window = function()
+            if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_win_is_valid(win) then
+                vim.api.nvim_win_close(win, true)
+            end
+        end
+
+        -- Automatically close if buffer is left (e.g., user switches window)
         vim.api.nvim_create_autocmd("BufLeave", {
             buffer = buf,
             once = true,
             callback = function()
                 vim.schedule(function()
-                    if vim.api.nvim_win_is_valid(win) then
-                        vim.api.nvim_win_close(win, true)
-                        vim.notify("Commit cancelled", vim.log.levels.WARN)
+                    close_prompt_window()
+                    if commit_message == "" then -- Only notify if commit wasn't finalized
+                        vim.notify("Commit cancelled (window left)", vim.log.levels.WARN)
                     end
                 end)
             end,
         })
 
-        -- Add escape key mapping to cancel
+        -- Add escape key mapping to cancel in Insert mode
         vim.keymap.set("i", "<esc>", function()
-            vim.api.nvim_win_close(win, true)
-            vim.notify("Commit cancelled", vim.log.levels.WARN)
+            close_prompt_window()
+            if commit_message == "" then
+                vim.notify("Commit cancelled (Esc)", vim.log.levels.WARN)
+            end
         end, { buffer = buf, nowait = true })
+        -- Also allow Esc in Normal mode within the prompt window
+        vim.keymap.set("n", "<esc>", function()
+            close_prompt_window()
+            if commit_message == "" then
+                vim.notify("Commit cancelled (Esc)", vim.log.levels.WARN)
+            end
+        end, { buffer = buf, nowait = true, silent = true })
 
-        -- Set up the prompt callback
+
+        -- Set up the prompt callback (called when user presses Enter)
         vim.fn.prompt_setcallback(buf, function(input)
-            if input and input ~= "" then
-                commit_message = input
-                vim.api.nvim_win_close(win, true)
+            close_prompt_window() -- Close window immediately
 
-                -- Get current branch
-                local success, branch_output = execute_git_command("git branch --show-current", true)
-                if not success then
-                    vim.notify("Error: Could not determine the current branch", vim.log.levels.ERROR)
+            if not input or input == "" then
+                vim.notify("Commit cancelled (empty message)", vim.log.levels.WARN)
+                return
+            end
+
+            local final_description = nil
+            vim.notify("Using user generated message.", vim.log.levels.INFO)
+
+            -- Handle AI generation request
+            if input:lower() == "ai" then
+                -- AI function requires changes to be staged (we did that above)
+                local ai_title, ai_description = get_ai_title_and_description("AI Suggestion Failed")
+
+                if ai_title and ai_title ~= "AI Suggestion Failed" then
+                    final_title = ai_title
+                    final_description = ai_description -- Can be nil
+                    vim.notify("Using AI generated message.", vim.log.levels.INFO)
+                else
+                    vim.notify("Failed to generate AI commit message or no staged changes found. Aborting.",
+                        vim.log.levels.ERROR)
                     return
                 end
-                local current_branch = branch_output[1]
-
-                -- Execute git commands
-                local commands = {
-                    { cmd = "git add .",                                                            msg = "Adding files..." },
-                    { cmd = string.format([[git commit -m "%s"]], commit_message:gsub('"', '\\"')), msg = "Committing..." },
-                    { cmd = "git pull --no-edit",                                                   msg = "Pulling changes..." },
-                }
-
-                for _, command in ipairs(commands) do
-                    vim.notify(command.msg, vim.log.levels.INFO)
-                    local success, output = execute_git_command(command.cmd)
-                    if not success then
-                        return
-                    end
-                end
-
-                -- Check if branch exists on remote
-                local success, remote_check = execute_git_command("git ls-remote --heads origin " .. current_branch, true)
-                local push_command = #remote_check == 0
-                    and "git push --set-upstream origin " .. current_branch
-                    or "git push"
-
-                vim.notify("Pushing changes...", vim.log.levels.INFO)
-                local success, _ = execute_git_command(push_command)
-                if success then
-                    vim.notify("Successfully committed and pushed: " .. commit_message, vim.log.levels.INFO)
-                end
             else
-                vim.api.nvim_win_close(win, true)
-                vim.notify("Commit cancelled", vim.log.levels.WARN)
+                -- Use user input directly. Assume first line is title, rest is description
+                local lines = vim.split(input, "\n", { trimempty = true })
+                final_title = lines[1] or ""
+                if #lines > 1 then
+                    final_description = table.concat(lines, "\n", 2) -- Join lines starting from the second one
+                end
+            end
+
+            -- Construct final commit message string
+            commit_message = final_title
+            if final_description and final_description ~= "" then
+                -- Ensure a blank line between title and description
+                commit_message = commit_message .. "\n\n" .. final_description
+            end
+
+            -- Escape the final commit message for the shell command using single quotes
+            local escaped_commit_message = commit_message:gsub("'", "'\\''") -- Escape single quotes for use within single quotes
+
+            -- Get current branch (ensure it's trimmed)
+            local success_branch, branch_output, _ = execute_command("git branch --show-current", true, true)
+            if not success_branch or #branch_output == 0 then
+                vim.notify("Error: Could not determine the current branch. Aborting.", vim.log.levels.ERROR)
+                return
+            end
+            local current_branch = branch_output[1]:match("^%s*(.-)%s*$")
+
+            -- Execute git commit, pull, push sequence
+            local commands = {
+                -- Stage all was already done
+                { cmd = string.format("git commit -m '%s'", escaped_commit_message), msg = "Committing..." },
+                { cmd = "git pull --no-edit",                                        msg = "Pulling changes..." },
+            }
+
+            for i, command in ipairs(commands) do
+                vim.notify(command.msg, vim.log.levels.INFO)
+                local success_cmd, _, exit_code_cmd = execute_command(command.cmd, false, false) -- Show errors
+                if not success_cmd then
+                    if i == 2 then                                                               -- Pull failed
+                        vim.notify(
+                            "Pull failed (exit code " .. exit_code_cmd .. "). Resolve conflicts and push manually.",
+                            vim.log.levels.ERROR)
+                    else -- Commit failed
+                        vim.notify("Commit failed (exit code " .. exit_code_cmd .. "). Aborting.", vim.log.levels.ERROR)
+                    end
+                    return -- Stop the sequence
+                end
+            end
+
+            -- Check if branch exists on remote (use shellescape)
+            local escaped_branch_for_check = vim.fn.shellescape(current_branch)
+            vim.notify("Checking remote status for branch: " .. current_branch, vim.log.levels.INFO)
+            local success_remote_check, remote_check_lines, _ = execute_command(
+                "git ls-remote --heads origin " .. escaped_branch_for_check, true, true)
+            local branch_exists_on_remote = success_remote_check and #remote_check_lines > 0
+
+            local push_command
+            if branch_exists_on_remote then
+                push_command = "git push"
+                vim.notify("Branch exists on remote. Pushing...", vim.log.levels.INFO)
+            else
+                push_command = "git push --set-upstream origin " .. escaped_branch_for_check
+                vim.notify("Branch does not exist on remote. Pushing with --set-upstream...", vim.log.levels.INFO)
+            end
+
+            local success_push, _ = execute_command(push_command, false, false) -- Show errors
+            if success_push then
+                vim.notify("Successfully committed and pushed.", vim.log.levels.INFO)
+                vim.notify("Commit: " .. final_title, vim.log.levels.INFO) -- Show the title used
+            else
+                vim.notify("Push failed. Please check git output or run 'git push' manually.", vim.log.levels.ERROR)
             end
         end)
 
         -- Start prompt
-        vim.fn.prompt_setprompt(buf, "")
-        vim.cmd("startinsert")
+        vim.fn.prompt_setprompt(buf, "Commit msg ('ai'?): ") -- Set prompt text
+        vim.cmd("startinsert")                               -- Enter insert mode in the prompt buffer
     end,
-    {}
+    {}                                                       -- No arguments for the command
 )
+vim.keymap.set("n", "<leader>ca", "<cmd>GitAddAndCommitAll<CR>", { desc = "Git Add All, Commit, Pull, Push" })
 
-vim.keymap.set("n", "<leader>co", "<cmd>GitCheckoutNewBranch<CR>")
+
+-- Command: GitCheckoutNewBranch
 vim.api.nvim_create_user_command("GitCheckoutNewBranch",
     function()
-        -- Use vim.ui.input to prompt the user
-        vim.ui.input({ prompt = "Branch name: " }, function(input)
-            if input then
-                vim.cmd("Git checkout -b " .. input)
-                vim.print("Checked out new branch: " .. input)
+        vim.ui.input({ prompt = "New branch name: " }, function(input)
+            if input and input ~= "" then
+                local escaped_branch = vim.fn.shellescape(input)
+                -- Use execute_command to run and handle potential errors
+                vim.notify("Checking out new branch: " .. input, vim.log.levels.INFO)
+                local success, _, _ = execute_command("git checkout -b " .. escaped_branch, false, false) -- Show errors
+                if success then
+                    vim.notify("Checked out new branch: " .. input, vim.log.levels.INFO)
+                else
+                    vim.notify("Failed to checkout new branch: " .. input, vim.log.levels.ERROR)
+                end
             else
-                print("Prompt cancelled")
+                vim.notify("Branch checkout cancelled", vim.log.levels.WARN)
             end
         end)
     end,
     {})
+vim.keymap.set("n", "<leader>co", "<cmd>GitCheckoutNewBranch<CR>", { desc = "Git Checkout New Branch" })
 
-vim.keymap.set("n", "<leader>gp", "<cmd>Git pull --no-edit<CR>")
 
-vim.keymap.set("n", "<leader>p", "<cmd>GitPushNewBranch<CR>")
-vim.api.nvim_create_user_command("GitPushNewBranch",
+-- Keymap: Git Pull
+vim.keymap.set("n", "<leader>gp", function()
+    vim.notify("Pulling changes (git pull --no-edit)...", vim.log.levels.INFO)
+    local success, _, _ = execute_command("git pull --no-edit", false, false) -- Show errors
+    if success then
+        vim.notify("Pull successful.", vim.log.levels.INFO)
+    else
+        vim.notify("Pull failed. Check git output or resolve conflicts.", vim.log.levels.ERROR)
+    end
+end, { desc = "Git Pull" })
+
+
+-- Command: GitPushCurrentBranch (Handles upstream)
+vim.api.nvim_create_user_command("GitPushCurrentBranch",
     function()
-        local current_branch = vim.fn.systemlist("git branch --show-current")[1]
-        if not current_branch then
-            print("Error: Could not determine the current branch")
+        -- Get current branch
+        local success_branch, branch_output, _ = execute_command("git branch --show-current", true, true)
+        if not success_branch or #branch_output == 0 then
+            vim.notify("Error: Could not determine the current branch.", vim.log.levels.ERROR)
             return
         end
-        -- Check if the branch exists on the remote
-        local remote_branch_exists = vim.fn.systemlist("Git ls-remote --heads origin " .. current_branch)
+        local current_branch = branch_output[1]:match("^%s*(.-)%s*$")
+        local escaped_branch = vim.fn.shellescape(current_branch)
 
-        if #remote_branch_exists == 0 then
-            -- Branch does not exist on the remote, push with --set-upstream
-            vim.cmd("!git push --set-upstream origin " .. current_branch)
+        -- Check if branch exists on remote
+        vim.notify("Checking remote status for branch: " .. current_branch, vim.log.levels.INFO)
+        local success_remote_check, remote_check_lines, _ = execute_command(
+            "git ls-remote --heads origin " .. escaped_branch, true, true)
+        local branch_exists_on_remote = success_remote_check and #remote_check_lines > 0
+
+        local push_command
+        if branch_exists_on_remote then
+            push_command = "git push"
+            vim.notify("Pushing current branch (" .. current_branch .. ") ...", vim.log.levels.INFO)
         else
-            -- Branch exists, normal push
-            vim.cmd("Git push")
+            push_command = "git push --set-upstream origin " .. escaped_branch
+            vim.notify("Pushing current branch (" .. current_branch .. ") with --set-upstream...", vim.log.levels.INFO)
+        end
+
+        local success_push, _ = execute_command(push_command, false, false) -- Show errors
+        if success_push then
+            vim.notify("Push successful.", vim.log.levels.INFO)
+        else
+            vim.notify("Push failed. Check git output.", vim.log.levels.ERROR)
         end
     end,
     {})
+-- Renamed keymap to reflect it pushes the *current* branch, not necessarily a *new* one
+vim.keymap.set("n", "<leader>p", "<cmd>GitPushCurrentBranch<CR>",
+    { desc = "Git Push Current Branch (set upstream if needed)" })
+
+
+print("Git helper commands loaded.") -- Confirmation message
