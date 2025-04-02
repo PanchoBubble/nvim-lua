@@ -50,8 +50,8 @@ local function execute_command(cmd, return_output, silent_execution)
         local error_message = string.format("Command failed (code %d): %s", exit_code, cmd)
         if return_output and #output_lines > 0 then
             error_message = error_message .. "\nOutput:\n" .. table.concat(output_lines, "\n")
-        elseif #output_lines > 0 then
-            error_message = error_message .. "\nOutput:\n" .. table.concat(output_lines, "\n")
+        elseif #output_lines > 0 then -- Also show output even if not requested on error
+             error_message = error_message .. "\nOutput:\n" .. table.concat(output_lines, "\n")
         end
         -- Option 1: Simple Notification
         vim.notify(error_message, vim.log.levels.ERROR)
@@ -69,13 +69,15 @@ local function execute_command(cmd, return_output, silent_execution)
     return exit_code == 0, output_lines, exit_code
 end
 
--- Function to get AI-generated commit title and description
+-- Function to get AI-generated commit title and description using Google Gemini API
 -- IMPORTANT: This function now ONLY reads the diff, it does NOT stage changes.
 local function get_ai_title_and_description(currentTitle)
-    vim.notify("Getting AI title and description...")
-    local api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key then
-        vim.notify("ANTHROPIC_API_KEY environment variable not set", vim.log.levels.ERROR)
+    vim.notify("Getting AI title and description via Gemini...")
+
+    -- *** MODIFIED: Use GEMINI_API_KEY ***
+    local api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key == "" then
+        vim.notify("GEMINI_API_KEY environment variable not set", vim.log.levels.ERROR)
         return currentTitle, nil
     end
 
@@ -84,7 +86,7 @@ local function get_ai_title_and_description(currentTitle)
     local success, diff_output, exit_code = execute_command(
         "git diff --cached --no-prefix --diff-filter=AMDRC", true, true) -- return output, silent execution
 
-    if not success and exit_code ~= 0 then                               -- Ignore exit code 0 which means success even if diff is empty
+    if not success and exit_code ~= 0 then -- Ignore exit code 0 which means success even if diff is empty
         vim.notify("Failed to get git diff (code: " .. exit_code .. ")", vim.log.levels.ERROR)
         return currentTitle, nil
     end
@@ -96,13 +98,13 @@ local function get_ai_title_and_description(currentTitle)
     end
 
     local diff_content = table.concat(diff_output, "\n")
-    local max_diff_length = 15000 -- Adjust as needed
+    local max_diff_length = 15000 -- Adjust as needed (Gemini has context limits too)
     if #diff_content > max_diff_length then
         diff_content = diff_content:sub(1, max_diff_length)
         vim.notify("Diff content truncated to " .. max_diff_length .. " characters", vim.log.levels.WARN)
     end
 
-    -- Prepare the prompt for Anthropic
+    -- Prepare the prompt for Gemini (Same prompt structure should work)
     local prompt_text = string.format([[
 Based on the following git diff of *staged* changes, please provide:
 1. A concise, conventional commit style title (e.g., "feat: Add X", "fix: Y", "refactor: Z"). Max 50 chars.
@@ -116,80 +118,98 @@ Git diff:
 %s
 ]], diff_content)
 
-    -- Escape the entire prompt text for the final JSON payload
-    local escaped_prompt = vim.json.encode(prompt_text)
-    if not escaped_prompt then
-        vim.notify("Failed to JSON encode the prompt.", vim.log.levels.ERROR)
-        return currentTitle, nil
+    -- *** MODIFIED: Prepare Gemini JSON Payload ***
+    -- Escape the prompt text for JSON embedding
+    local escaped_prompt_for_json = vim.fn.json_encode(prompt_text)
+    if not escaped_prompt_for_json then
+         vim.notify("Failed to JSON encode the prompt text.", vim.log.levels.ERROR)
+         return currentTitle, nil
     end
 
-    -- Construct the JSON payload carefully
+    -- Construct the Gemini JSON payload
+    -- Note the structure: { "contents": [{ "parts": [{"text": "..."}] }] }
     local json_payload = string.format(
-        '{"model":"claude-3-haiku-20240307","max_tokens":300,"messages":[{"role":"user","content":%s}]}',
-        escaped_prompt
+        '{"contents": [{"parts":[{"text": %s}]}]}',
+        escaped_prompt_for_json
     )
 
-    -- Prepare the curl command using single quotes for the payload AND make it a single line
-    -- Escape the single quotes around the payload data '%s' -> \'%s\' because the outer string.format uses single quotes.
+    -- *** MODIFIED: Prepare Gemini Curl Command ***
+    -- Construct the Gemini API URL with the key
+    local api_url = string.format(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=%s",
+        api_key
+    )
+
+    -- Escape the URL and payload for the shell command
+    local escaped_api_url = vim.fn.shellescape(api_url)
+    -- Use single quotes around the payload data '-d' argument for robustness
+    local escaped_json_payload = vim.fn.shellescape(json_payload) -- Already JSON, but shellescape handles potential shell metachars
+
+    -- Construct the curl command using single quotes for the payload
     local curl_command = string.format(
-        'curl -s -X POST https://api.anthropic.com/v1/messages -H "x-api-key: %s" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d \'%s\'',
-        api_key, json_payload
+        "curl -s -X POST %s -H 'Content-Type: application/json' -d %s",
+        escaped_api_url,
+        escaped_json_payload -- Use the shell-escaped payload
     )
 
-    vim.notify("Requesting AI commit message...", vim.log.levels.INFO)
+    vim.notify("Requesting AI commit message from Gemini...", vim.log.levels.INFO)
     -- Optional: Debug print the command BEFORE executing (remove API key if logging publicly)
-    -- print("DEBUG: Curl Command:", curl_command)
-
-    -- Execute curl command (silently, handle errors below)
-    local success_curl, response_lines, exit_code_curl = execute_command(curl_command, true, true)
-
-
-    vim.notify("Requesting AI commit message...", vim.log.levels.INFO)
+    -- print("DEBUG: Gemini Curl Command:", curl_command)
 
     -- Execute curl command (silently, handle errors below)
     local success_curl, response_lines, exit_code_curl = execute_command(curl_command, true, true)
 
     if not success_curl then
-        vim.notify("API call failed (curl exit code: " .. exit_code_curl .. ").", vim.log.levels.ERROR)
+        vim.notify("Gemini API call failed (curl exit code: " .. exit_code_curl .. ").", vim.log.levels.ERROR)
         -- Attempt to parse response even on failure, might contain API error message
         if #response_lines > 0 then
             local response_text = table.concat(response_lines, "")
             local success_decode, decoded = pcall(vim.json.decode, response_text)
             if success_decode and decoded and decoded.error then
                 local api_error = decoded.error.message or vim.inspect(decoded.error)
-                vim.notify("API Error: " .. api_error, vim.log.levels.ERROR)
+                vim.notify("Gemini API Error: " .. api_error, vim.log.levels.ERROR)
             else
-                vim.notify("Raw API Response/Error: " .. response_text, vim.log.levels.WARN)
+                vim.notify("Raw Gemini API Response/Error: " .. response_text, vim.log.levels.WARN)
             end
         end
         return currentTitle, nil
     end
 
     local response_text = table.concat(response_lines, "")
+    -- vim.notify("DEBUG Raw Response: " .. response_text, vim.log.levels.DEBUG) -- Keep for debugging
+
     local success_decode, decoded = pcall(vim.json.decode, response_text)
     if not success_decode then
-        vim.notify("Failed to parse API response JSON: " .. response_text, vim.log.levels.ERROR)
+        vim.notify("Failed to parse Gemini API response JSON: " .. response_text, vim.log.levels.ERROR)
         return currentTitle, nil
     end
 
-    -- Check for API-level errors in the JSON response
+    -- *** MODIFIED: Extract content from Gemini response structure ***
+    -- Check for API-level errors in the JSON response (Gemini format)
     if decoded.error then
-        local api_error = decoded.error.type .. ": " .. (decoded.error.message or vim.inspect(decoded.error))
-        vim.notify("API returned an error: " .. api_error, vim.log.levels.ERROR)
+        local api_error = decoded.error.message or vim.inspect(decoded.error)
+        vim.notify("Gemini API returned an error: " .. api_error, vim.log.levels.ERROR)
         return currentTitle, nil
     end
 
-    -- Correctly extract content from Claude Messages API response
-    local content = decoded.content and type(decoded.content) == 'table' and decoded.content[1] and
-        decoded.content[1].text
+    -- Extract generated text from candidates -> content -> parts -> text
+    local content = nil
+    if decoded.candidates and type(decoded.candidates) == 'table' and #decoded.candidates > 0 then
+        local candidate = decoded.candidates[1] -- Use the first candidate
+        if candidate.content and candidate.content.parts and type(candidate.content.parts) == 'table' and #candidate.content.parts > 0 then
+           content = candidate.content.parts[1].text
+        end
+    end
+
     if not content then
-        vim.notify("Invalid API response format or empty content: " .. vim.inspect(decoded), vim.log.levels.ERROR)
+        vim.notify("Invalid Gemini API response format or empty content: " .. vim.inspect(decoded), vim.log.levels.ERROR)
         return currentTitle, nil
     end
 
-    -- Parse title and description more robustly
+    -- *** SAME PARSING LOGIC (relies on AI following "Title:/Description:" format) ***
+    -- Parse title and description more robustly from the AI's *text* response
     local title = content:match("^[Tt]itle:%s*(.-)\n")
-    local description = content:match("\n[Dd]escription:%s*(.*)")
+    local description = content:match("\n[Dd]escription:%s*(.*)") -- Match rest of string after Description:
 
     -- Trim whitespace
     title = title and title:match("^%s*(.-)%s*$")
@@ -214,9 +234,10 @@ Git diff:
         -- if #description > 500 then description = description:sub(1, 497) .. "..." end
     end
 
-    vim.notify("AI message generated.", vim.log.levels.INFO)
+    vim.notify("AI message generated by Gemini.", vim.log.levels.INFO)
     return title, description
 end
+
 
 -- Command: GitAddAndCommitAll
 vim.api.nvim_create_user_command("GitAddAndCommitAll",
@@ -253,10 +274,8 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
 
         -- 2. Prepare for commit message input
         local buf, win = create_centered_floating_window("Commit Message (type 'ai' for suggestion)", 3) -- Start with height 3
-        local commit_message =
-        ""                                                                                               -- Will hold the final full message (title + desc)
-        local final_title =
-        ""                                                                                               -- Will hold just the title part
+        local commit_message = "" -- Will hold the final full message (title + desc)
+        local final_title = "" -- Will hold just the title part
 
         local close_prompt_window = function()
             if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_win_is_valid(win) then
@@ -304,24 +323,26 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
             end
 
             local final_description = nil
-            vim.notify("Using user generated message.", vim.log.levels.INFO)
+            -- Default to user input unless 'ai' is specified
+            local is_ai_request = (input:lower() == "ai")
 
             -- Handle AI generation request
-            if input:lower() == "ai" then
+            if is_ai_request then
                 -- AI function requires changes to be staged (we did that above)
-                local ai_title, ai_description = get_ai_title_and_description("AI Suggestion Failed")
+                local ai_title, ai_description = get_ai_title_and_description("AI Suggestion Failed") -- Call the updated function
 
                 if ai_title and ai_title ~= "AI Suggestion Failed" then
                     final_title = ai_title
                     final_description = ai_description -- Can be nil
-                    vim.notify("Using AI generated message.", vim.log.levels.INFO)
+                    vim.notify("Using AI generated message from Gemini.", vim.log.levels.INFO)
                 else
-                    vim.notify("Failed to generate AI commit message or no staged changes found. Aborting.",
+                    vim.notify("Failed to generate Gemini commit message or no staged changes found. Aborting.",
                         vim.log.levels.ERROR)
                     return
                 end
             else
                 -- Use user input directly. Assume first line is title, rest is description
+                vim.notify("Using user-provided commit message.", vim.log.levels.INFO)
                 local lines = vim.split(input, "\n", { trimempty = true })
                 final_title = lines[1] or ""
                 if #lines > 1 then
@@ -337,7 +358,8 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
             end
 
             -- Escape the final commit message for the shell command using single quotes
-            local escaped_commit_message = commit_message:gsub("'", "'\\''") -- Escape single quotes for use within single quotes
+            -- Replaced manual escaping with vim.fn.shellescape for robustness
+            local escaped_commit_message_arg = vim.fn.shellescape(commit_message)
 
             -- Get current branch (ensure it's trimmed)
             local success_branch, branch_output, _ = execute_command("git branch --show-current", true, true)
@@ -350,20 +372,27 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
             -- Execute git commit, pull, push sequence
             local commands = {
                 -- Stage all was already done
-                { cmd = string.format("git commit -m '%s'", escaped_commit_message), msg = "Committing..." },
-                { cmd = "git pull --no-edit",                                        msg = "Pulling changes..." },
+                 -- Use -m for simple messages, use -F - for complex messages passed via stdin?
+                 -- Using -m with shellescape should be fine for multiline messages.
+                { cmd = string.format("git commit -m %s", escaped_commit_message_arg), msg = "Committing..." },
+                { cmd = "git pull --no-edit",                                          msg = "Pulling changes..." },
             }
 
             for i, command in ipairs(commands) do
                 vim.notify(command.msg, vim.log.levels.INFO)
-                local success_cmd, _, exit_code_cmd = execute_command(command.cmd, false, false) -- Show errors
+                local success_cmd, output_lines_cmd, exit_code_cmd = execute_command(command.cmd, true, false) -- Show errors, get output
                 if not success_cmd then
-                    if i == 2 then                                                               -- Pull failed
+                    if i == 1 then -- Commit failed
+                        vim.notify("Commit failed (exit code " .. exit_code_cmd .. "). Aborting.", vim.log.levels.ERROR)
+                        vim.notify("Output:\n" .. table.concat(output_lines_cmd, "\n"), vim.log.levels.ERROR)
+                    elseif i == 2 then -- Pull failed
                         vim.notify(
                             "Pull failed (exit code " .. exit_code_cmd .. "). Resolve conflicts and push manually.",
                             vim.log.levels.ERROR)
-                    else -- Commit failed
-                        vim.notify("Commit failed (exit code " .. exit_code_cmd .. "). Aborting.", vim.log.levels.ERROR)
+                         vim.notify("Output:\n" .. table.concat(output_lines_cmd, "\n"), vim.log.levels.ERROR)
+                    else -- Should not happen with current commands
+                        vim.notify("Command failed (exit code " .. exit_code_cmd .. "). Aborting.", vim.log.levels.ERROR)
+                         vim.notify("Output:\n" .. table.concat(output_lines_cmd, "\n"), vim.log.levels.ERROR)
                     end
                     return -- Stop the sequence
                 end
@@ -385,12 +414,13 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
                 vim.notify("Branch does not exist on remote. Pushing with --set-upstream...", vim.log.levels.INFO)
             end
 
-            local success_push, _ = execute_command(push_command, false, false) -- Show errors
+            local success_push, push_output, push_exit_code = execute_command(push_command, true, false) -- Show errors, get output
             if success_push then
                 vim.notify("Successfully committed and pushed.", vim.log.levels.INFO)
                 vim.notify("Commit: " .. final_title, vim.log.levels.INFO) -- Show the title used
             else
-                vim.notify("Push failed. Please check git output or run 'git push' manually.", vim.log.levels.ERROR)
+                vim.notify("Push failed (exit code: " .. push_exit_code .. "). Please check git output or run 'git push' manually.", vim.log.levels.ERROR)
+                vim.notify("Output:\n" .. table.concat(push_output, "\n"), vim.log.levels.ERROR)
             end
         end)
 
@@ -398,7 +428,7 @@ vim.api.nvim_create_user_command("GitAddAndCommitAll",
         vim.fn.prompt_setprompt(buf, "Commit msg ('ai'?): ") -- Set prompt text
         vim.cmd("startinsert")                               -- Enter insert mode in the prompt buffer
     end,
-    {}                                                       -- No arguments for the command
+    {} -- No arguments for the command
 )
 vim.keymap.set("n", "<leader>ca", "<cmd>GitAddAndCommitAll<CR>", { desc = "Git Add All, Commit, Pull, Push" })
 
@@ -411,11 +441,12 @@ vim.api.nvim_create_user_command("GitCheckoutNewBranch",
                 local escaped_branch = vim.fn.shellescape(input)
                 -- Use execute_command to run and handle potential errors
                 vim.notify("Checking out new branch: " .. input, vim.log.levels.INFO)
-                local success, _, _ = execute_command("git checkout -b " .. escaped_branch, false, false) -- Show errors
+                local success, output_lines, exit_code = execute_command("git checkout -b " .. escaped_branch, true, false) -- Show errors
                 if success then
                     vim.notify("Checked out new branch: " .. input, vim.log.levels.INFO)
                 else
-                    vim.notify("Failed to checkout new branch: " .. input, vim.log.levels.ERROR)
+                    vim.notify("Failed to checkout new branch (exit code: " .. exit_code .. "): " .. input, vim.log.levels.ERROR)
+                    vim.notify("Output:\n" .. table.concat(output_lines, "\n"), vim.log.levels.ERROR)
                 end
             else
                 vim.notify("Branch checkout cancelled", vim.log.levels.WARN)
@@ -429,11 +460,12 @@ vim.keymap.set("n", "<leader>co", "<cmd>GitCheckoutNewBranch<CR>", { desc = "Git
 -- Keymap: Git Pull
 vim.keymap.set("n", "<leader>gp", function()
     vim.notify("Pulling changes (git pull --no-edit)...", vim.log.levels.INFO)
-    local success, _, _ = execute_command("git pull --no-edit", false, false) -- Show errors
+    local success, output_lines, exit_code = execute_command("git pull --no-edit", true, false) -- Show errors, get output
     if success then
         vim.notify("Pull successful.", vim.log.levels.INFO)
     else
-        vim.notify("Pull failed. Check git output or resolve conflicts.", vim.log.levels.ERROR)
+        vim.notify("Pull failed (exit code: " .. exit_code .. "). Check git output or resolve conflicts.", vim.log.levels.ERROR)
+        vim.notify("Output:\n" .. table.concat(output_lines, "\n"), vim.log.levels.ERROR)
     end
 end, { desc = "Git Pull" })
 
@@ -465,11 +497,12 @@ vim.api.nvim_create_user_command("GitPushCurrentBranch",
             vim.notify("Pushing current branch (" .. current_branch .. ") with --set-upstream...", vim.log.levels.INFO)
         end
 
-        local success_push, _ = execute_command(push_command, false, false) -- Show errors
+        local success_push, output_lines, exit_code = execute_command(push_command, true, false) -- Show errors, get output
         if success_push then
             vim.notify("Push successful.", vim.log.levels.INFO)
         else
-            vim.notify("Push failed. Check git output.", vim.log.levels.ERROR)
+            vim.notify("Push failed (exit code: " .. exit_code .. "). Check git output.", vim.log.levels.ERROR)
+            vim.notify("Output:\n" .. table.concat(output_lines, "\n"), vim.log.levels.ERROR)
         end
     end,
     {})
@@ -478,4 +511,4 @@ vim.keymap.set("n", "<leader>p", "<cmd>GitPushCurrentBranch<CR>",
     { desc = "Git Push Current Branch (set upstream if needed)" })
 
 
-print("Git helper commands loaded.") -- Confirmation message
+print("Git helper commands loaded (with Gemini AI commit).") -- Confirmation message
