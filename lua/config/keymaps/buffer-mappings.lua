@@ -1,22 +1,11 @@
--- Cache frequently used modules
-local api = vim.api
-local fn = vim.fn
 local notify = vim.notify
 local schedule = vim.schedule
 
 -- Buffer navigation (more efficient bulk registration)
-local function set_keymap_batch(maps)
-    for lhs, rhs in pairs(maps) do
-        vim.keymap.set("n", lhs, rhs)
-    end
-end
-
-set_keymap_batch({
-    ["<C-j>"] = "<C-w><C-j>",
-    ["<C-k>"] = "<C-w><C-k>",
-    ["<C-h>"] = "<C-w><C-h>",
-    ["<C-l>"] = "<C-w><C-l>",
-})
+vim.keymap.set("n", "<C-j>", "<C-w><C-j>")
+vim.keymap.set("n", "<C-k>", "<C-w><C-k>")
+vim.keymap.set("n", "<C-h>", "<C-w><C-h>")
+vim.keymap.set("n", "<C-l>", "<C-w><C-l>")
 
 vim.keymap.set("n", "<leader>bb", "<C-^><CR>")        -- Go to previous file
 vim.keymap.set("n", "gd", vim.lsp.buf.implementation) -- Go to implementation

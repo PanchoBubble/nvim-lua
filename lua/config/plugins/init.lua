@@ -12,6 +12,26 @@ return {
         -- end
     },
 
+
+    -- TMUX
+    {
+        "christoomey/vim-tmux-navigator",
+        cmd = {
+            "TmuxNavigateLeft",
+            "TmuxNavigateDown",
+            "TmuxNavigateUp",
+            "TmuxNavigateRight",
+            "TmuxNavigatePrevious",
+            "TmuxNavigatorProcessList",
+        },
+        keys = {
+            { "<c-h>",  "<cmd><C-U>TmuxNavigateLeft<cr>" },
+            { "<c-j>",  "<cmd><C-U>TmuxNavigateDown<cr>" },
+            { "<c-k>",  "<cmd><C-U>TmuxNavigateUp<cr>" },
+            { "<c-l>",  "<cmd><C-U>TmuxNavigateRight<cr>" },
+            { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+        },
+    },
     -- Theme
     {
         'nvim-tree/nvim-web-devicons',
@@ -34,10 +54,10 @@ return {
                     strings = { italic = false },
                     variables = { italic = false }
                 },
-                filter = 'pro', -- classic | octagon | pro | machine | ristretto | spectrum
+                filter = 'pro',        -- classic | octagon | pro | machine | ristretto | spectrum
                 background_clear = {}, -- disable background for specific filetypes
                 day_night = {
-                    enable = false, -- disabling this feature improves performance
+                    enable = false,    -- disabling this feature improves performance
                 },
             })
         end

@@ -28,6 +28,7 @@ return {
                     "lua",
                     "html",
                     "javascript",
+                    "tsx",
                     "json",
                     -- "graphql",
                     "markdown",

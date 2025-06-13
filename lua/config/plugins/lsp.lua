@@ -182,11 +182,11 @@ return {
 
             require('conform').setup({
                 formatters_by_ft = {
-                    typescript = { "prettierd", "prettier" },
-                    typescriptreact = { "prettierd", "prettier" },
-                    javascript = { "prettierd", "prettier" },
-                    javascriptreact = { "prettierd", "prettier" },
-                    mustache = { 'djlint' }
+                    typescript = { "prettier" },
+                    typescriptreact = { "prettier" },
+                    javascript = { "prettier" },
+                    javascriptreact = { "prettier" },
+                    -- mustache = { 'djlint' }
                 },
             })
         end,
