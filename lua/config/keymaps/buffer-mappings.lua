@@ -43,8 +43,8 @@ local function is_in_git_repo(filepath)
 end
 
 -- Cache nvim-tree view module
-local nvim_tree_view = require("nvim-tree.view")
-local avante = require("avante")
+-- local nvim_tree_view = require("nvim-tree.view")
+-- local avante = require("avante")
 
 -- Helper function to check if buffer is visible in any window
 local function is_buffer_visible(bufnr)
@@ -58,11 +58,12 @@ end
 
 -- Close buffers, handling NvimTree
 local function closeBuffers(closeAll)
-    avante.close_sidebar()
-    local isOpen = nvim_tree_view.is_visible()
-    if isOpen then
-        vim.cmd("NvimTreeClose")
-    end
+    -- avante.close_sidebar()
+    -- local isOpen = nvim_tree_view.is_visible()
+    -- if isOpen then
+    --     vim.cmd("NvimTreeClose")
+    -- end
+    vim.cmd("NvimTreeClose")
 
     local unsaved_buffers = {}
     local current_buf = vim.api.nvim_get_current_buf()
@@ -121,23 +122,23 @@ local function closeBuffers(closeAll)
         end)
     end
 
-    if isOpen then
-        vim.cmd("NvimTreeOpen")
-        vim.cmd("NvimTreeCollapse")
-        if closeAll then
-            vim.cmd("bnext")
-        else
-            -- Try next buffer number
-            local next_buf = current_buf + 1
-            if next_buf <= #bufs and vim.api.nvim_buf_is_valid(next_buf) then
-                vim.cmd("buffer " .. next_buf)
-                -- Try previous buffer number
-            elseif current_buf > 1 and vim.api.nvim_buf_is_valid(current_buf - 1) then
-                vim.cmd("buffer " .. (current_buf - 1))
-            end
-        end
-        vim.cmd("NvimTreeFocus")
-    end
+    -- if isOpen then
+    --     vim.cmd("NvimTreeOpen")
+    --     vim.cmd("NvimTreeCollapse")
+    --     if closeAll then
+    --         vim.cmd("bnext")
+    --     else
+    --         -- Try next buffer number
+    --         local next_buf = current_buf + 1
+    --         if next_buf <= #bufs and vim.api.nvim_buf_is_valid(next_buf) then
+    --             vim.cmd("buffer " .. next_buf)
+    --             -- Try previous buffer number
+    --         elseif current_buf > 1 and vim.api.nvim_buf_is_valid(current_buf - 1) then
+    --             vim.cmd("buffer " .. (current_buf - 1))
+    --         end
+    --     end
+    --     vim.cmd("NvimTreeFocus")
+    -- end
 end
 
 vim.keymap.set("n", "<C-d>", function() closeBuffers(false) end)    -- Close current buffer
