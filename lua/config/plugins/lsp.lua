@@ -75,6 +75,25 @@ return {
 
             require("neodev").setup()
             local lspconfig = require('lspconfig')
+
+            lspconfig.lua_ls.setup({
+                settings = {
+                    Lua = {
+                        diagnostics = {
+                            globals = { "vim" },
+                        },
+                        workspace = {
+                            checkThirdParty = false,
+                            library = {
+                                vim.env.VIMRUNTIME,
+                            },
+                        },
+                        completion = {
+                            callSnippet = "Replace"
+                        }
+                    },
+                }
+            })
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
@@ -90,22 +109,21 @@ return {
                 }
             })
             require('mason-lspconfig').setup({
-                automatic_installation = true,
+                automatic_enable = true,
                 -- Split servers into essential and non-essential
                 ensure_installed = {
                     -- Essential (loaded immediately)
                     'ts_ls',
                     'lua_ls',
                     'eslint',
-
                     -- Non-essential (loaded on demand)
                     'pylsp',
-                    'biome',
+                    -- 'biome',
                     'gopls',
                     'svelte',
                     'rust_analyzer',
                     'html',
-                    'denols',
+                    -- 'denols',
                     'cssls',
                     'sqls'
                 },
@@ -140,9 +158,9 @@ return {
                 }
             })
 
-            lspconfig.denols.setup {
-                root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
-            }
+            -- lspconfig.denols.setup {
+            --     root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
+            -- }
 
             lspconfig.ts_ls.setup {
                 root_dir = lspconfig.util.root_pattern("package.json"),

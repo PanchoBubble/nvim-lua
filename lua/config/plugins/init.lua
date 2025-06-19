@@ -16,6 +16,7 @@ return {
     -- TMUX
     {
         "christoomey/vim-tmux-navigator",
+        lazy = false,
         cmd = {
             "TmuxNavigateLeft",
             "TmuxNavigateDown",
@@ -66,7 +67,7 @@ return {
     -- GIT
     {
         "tpope/vim-fugitive",
-        lazy = true,
+        lazy = false,
         cmd = {
             "Git",
             "Gwrite",

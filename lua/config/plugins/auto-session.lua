@@ -2,7 +2,7 @@ return {
     {
         'rmagatti/auto-session',
         config = function()
-            vim.o.sessionoptions = "buffers,curdir,folds,tabpages,winsize,localoptions"
+            vim.o.sessionoptions = "buffers,curdir,tabpages,localoptions"
             require('auto-session').setup({
                 auto_session_last_session_dir = vim.fn.stdpath "data" .. "/sessions/",
                 auto_session_root_dir = vim.fn.stdpath "data" .. "/sessions/",
