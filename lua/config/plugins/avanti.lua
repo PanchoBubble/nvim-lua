@@ -16,15 +16,15 @@ return {
         })
     end,
     opts = {
-        provider = "openai",
+        provider = "claude",
         openai = {
             endpoint = "https://api.openai.com/v1",
             model = "gpt-4.1", -- your desired model (or use gpt-4o, etc.)
             timeout = 30000,   -- Timeout in milliseconds, increase this for reasoning models
             temperature = 0,
         },
-        cursor_applying_provider = "claude",  -- Explicitly set for consistency
-        auto_suggestions_provider = "gemini", -- Use Gemini for suggestions
+        -- cursor_applying_provider = "claude",  -- Explicitly set for consistency
+        -- auto_suggestions_provider = "gemini", -- Use Gemini for suggestions
         suggestion = {
             debounce = 500,                   -- Delay before triggering suggestions (ms)
             enabled = true,                   -- Enable suggestions with Gemini
@@ -32,7 +32,7 @@ return {
         },
         claude = {
             endpoint = "https://api.anthropic.com",
-            model = "claude-3-5-sonnet-20241022",
+            model = "claude-3-7-sonnet-latest",
             temperature = 0.1, -- Slightly increased for more creative responses
             max_tokens = 4096,
             top_p = 0.95,      -- Add top_p for better response quality

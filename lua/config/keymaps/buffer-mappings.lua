@@ -121,24 +121,6 @@ local function closeBuffers(closeAll)
             })
         end)
     end
-
-    -- if isOpen then
-    --     vim.cmd("NvimTreeOpen")
-    --     vim.cmd("NvimTreeCollapse")
-    --     if closeAll then
-    --         vim.cmd("bnext")
-    --     else
-    --         -- Try next buffer number
-    --         local next_buf = current_buf + 1
-    --         if next_buf <= #bufs and vim.api.nvim_buf_is_valid(next_buf) then
-    --             vim.cmd("buffer " .. next_buf)
-    --             -- Try previous buffer number
-    --         elseif current_buf > 1 and vim.api.nvim_buf_is_valid(current_buf - 1) then
-    --             vim.cmd("buffer " .. (current_buf - 1))
-    --         end
-    --     end
-    --     vim.cmd("NvimTreeFocus")
-    -- end
 end
 
 vim.keymap.set("n", "<C-d>", function() closeBuffers(false) end)    -- Close current buffer

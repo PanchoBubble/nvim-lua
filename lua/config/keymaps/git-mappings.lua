@@ -506,9 +506,6 @@ vim.api.nvim_create_user_command("GitPushCurrentBranch",
         end
     end,
     {})
--- Renamed keymap to reflect it pushes the *current* branch, not necessarily a *new* one
-vim.keymap.set("n", "<leader>p", "<cmd>GitPushCurrentBranch<CR>",
-    { desc = "Git Push Current Branch (set upstream if needed)" })
 
 
 print("Git helper commands loaded (with Gemini AI commit).") -- Confirmation message

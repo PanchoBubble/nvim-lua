@@ -11,11 +11,26 @@ return {
                     ignore = false,
                     timeout = 500,
                 },
-                view = { adaptive_size = true },
+                view = { 
+                    adaptive_size = true,
+                    width = 35,
+                },
                 update_cwd = true,
+                renderer = {
+                    group_empty = true,
+                    highlight_git = true,
+                    icons = {
+                        glyphs = {
+                            folder = {
+                                arrow_closed = "",
+                                arrow_open = "",
+                            },
+                        },
+                    },
+                },
                 filters = {
                     dotfiles = false,
-                    custom = { 'node_modules' }
+                    custom = { 'node_modules', '.DS_Store', 'vendor' },
                 },
                 update_focused_file = {
                     enable = true,
@@ -24,7 +39,7 @@ return {
                 filesystem_watchers = {
                     enable = true,
                     debounce_delay = 50,
-                    ignore_dirs = { "node_modules" },
+                    ignore_dirs = { "node_modules", '.DS_Store', 'vendor', '.git' },
                 },
             })
             require("bufferline").setup({

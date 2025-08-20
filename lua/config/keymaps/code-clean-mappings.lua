@@ -13,13 +13,13 @@ local function prettify()
     -- Check if Biome is installed and available
     if vim.fn.exists(':EslintFixAll') > 0 then
         vim.cmd("EslintFixAll")
-    elseif filetype == "typescript" or filetype == "javascript" then
-        -- Call Biome to format the code and apply fixes
-        local current_file = vim.api.nvim_buf_get_name(0)
-        vim.cmd(
-            "!biome check" ..
-            current_file
-        )
+    -- elseif filetype == "typescript" or filetype == "javascript" then
+    --     -- Call Biome to format the code and apply fixes
+    --     local current_file = vim.api.nvim_buf_get_name(0)
+    --     vim.cmd(
+    --         "!biome check" ..
+    --         current_file
+    --     )
     else
         vim.lsp.buf.format()
     end
