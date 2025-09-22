@@ -1,22 +1,21 @@
 -- Core functionality mappings
 local core_mappings = {
-    'code-edit-mappings',    -- Code editing related mappings
-    'code-clean-mappings',   -- Code cleaning and formatting
-    'buffer-mappings',       -- Buffer management
+    'code-edit-mappings',  -- Code editing related mappings
+    'code-clean-mappings', -- Code cleaning and formatting
+    'buffer-mappings',     -- Buffer management
 }
 
 -- Tool integration mappings
 local tool_mappings = {
-    'tree-mappings',        -- Nvim-tree with improved root handling
-    'telescope-mappings',    -- Telescope fuzzy finder
-    'git-mappings',         -- Git operations
+    'tree-mappings',      -- Nvim-tree with improved root handling
+    'telescope-mappings', -- Telescope fuzzy finder
+    'git-mappings',       -- Git operations
 }
 
 -- Custom mappings
 local custom_mappings = {
-    'personal-mappings',    -- Personal user preferences
-    'other-mappings',       -- Miscellaneous mappings
-    'avante-mappings',      -- Avante-specific mappings
+    'personal-mappings', -- Personal user preferences
+    'other-mappings',    -- Miscellaneous mappings
 }
 
 -- Load all mapping modules
@@ -33,6 +32,3 @@ end
 load_mappings(core_mappings)
 load_mappings(tool_mappings)
 load_mappings(custom_mappings)
-
--- Set up a global check for Avante buffers
-_G.is_avante_buffer = require('config.keymaps.avante-mappings').is_avante_buffer

@@ -44,7 +44,6 @@ end
 
 -- Cache nvim-tree view module
 -- local nvim_tree_view = require("nvim-tree.view")
--- local avante = require("avante")
 
 -- Helper function to check if buffer is visible in any window
 local function is_buffer_visible(bufnr)
@@ -58,11 +57,6 @@ end
 
 -- Close buffers, handling NvimTree
 local function closeBuffers(closeAll)
-    -- avante.close_sidebar()
-    -- local isOpen = nvim_tree_view.is_visible()
-    -- if isOpen then
-    --     vim.cmd("NvimTreeClose")
-    -- end
     vim.cmd("NvimTreeClose")
 
     local unsaved_buffers = {}

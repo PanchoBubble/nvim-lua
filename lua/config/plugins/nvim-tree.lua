@@ -11,7 +11,7 @@ return {
                     ignore = false,
                     timeout = 500,
                 },
-                view = { 
+                view = {
                     adaptive_size = true,
                     width = 35,
                 },
