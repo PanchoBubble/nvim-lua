@@ -190,15 +190,15 @@ return {
                 )
             end
 
-            autocmd("User", {
-                group = augroup("start"),
-                pattern = "MiniFilesExplorerOpen",
-                -- pattern = { "minifiles" },
-                callback = function()
-                    local bufnr = vim.api.nvim_get_current_buf()
-                    updateGitStatus(bufnr)
-                end,
-            })
+            -- autocmd("User", {
+            --     group = augroup("start"),
+            --     pattern = "MiniFilesExplorerOpen",
+            --     -- pattern = { "minifiles" },
+            --     callback = function()
+            --         local bufnr = vim.api.nvim_get_current_buf()
+            --         updateGitStatus(bufnr)
+            --     end,
+            -- })
 
             autocmd("User", {
                 group = augroup("close"),
