@@ -1,1 +1,42 @@
+# Neovim configuration gitignore
+
+# Lazy.nvim plugin files
+lazy-lock.json
+
+# Environment files
 .env
+
+# Backup files
+*.backup
+README.md.backup
+
+# Generated preview files
+images/syntax-previews/*.html
+images/syntax-previews/*.png
+images/syntax-previews/*.jpg
+
+# Temporary files
+.tmp/
+tmp/
+*.tmp
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Log files
+*.log
+
+# Spell files (generated)
+spell/*.spl
+
+# Session files
+session/
+.session
+
+# Undo files
+.undo/

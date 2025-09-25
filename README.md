@@ -251,4 +251,7 @@ This project is open source and available under the MIT License.
 
 ---
 
+<!-- SYNTAX_PREVIEWS -->
+<!-- END_SYNTAX_PREVIEWS -->
+
 *Built with ❤️ for modern development workflows. No more VSCode needed!* 🚀
