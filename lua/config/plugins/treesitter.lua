@@ -28,24 +28,34 @@ return {
                     enable = true,
                     disable = { "yaml" }, -- YAML indentation can be problematic
                 },
+                -- Enable language injection for code blocks in markdown
+                injections = {
+                    enable = true,
+                },
                 ensure_installed = {
                     "bash",
+                    "c",
+                    "cpp",
+                    "css",
+                    "dockerfile",
                     "go",
                     "gomod",
                     "gosum",
                     "gowork",
-                    "lua",
                     "html",
                     "javascript",
-                    "tsx",
                     "json",
+                    "lua",
                     "markdown",
                     "markdown_inline",
+                    "python",
+                    "rust",
+                    "sql",
+                    "tsx",
                     "typescript",
                     "vim",
+                    "vimdoc",
                     "yaml",
-                    "dockerfile",
-                    "sql",
                 },
             })
         end
