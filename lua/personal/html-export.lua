@@ -21,9 +21,9 @@ end
 
 -- Generate sample code for a specific language
 local function get_language_sample(language)
-  local samples = {
-    lua = [[
-local function fibonacci(n)
+  local samples = {}
+  
+  samples.lua = [[local function fibonacci(n)
   if n <= 1 then
     return n
   end
@@ -32,11 +32,9 @@ end
 
 -- Example usage
 local result = fibonacci(10)
-print("Result: " .. result)
-]],
+print("Result: " .. result)]]
     
-    javascript = [[
-const fetchUserData = async (userId) => {
+  samples.javascript = [[const fetchUserData = async (userId) => {
   try {
     const response = await fetch(`/api/users/${userId}`);
     const userData = await response.json();
@@ -45,11 +43,9 @@ const fetchUserData = async (userId) => {
     console.error('Failed to fetch user:', error);
     throw error;
   }
-};
-]],
+};]]
 
-    typescript = [[
-interface User {
+  samples.typescript = [[interface User {
   id: number;
   name: string;
   email: string;
@@ -62,30 +58,26 @@ class UserService {
   async getUser(id: number): Promise<User | null> {
     return this.users.get(id) || null;
   }
-}
-]],
+}]]
 
-    python = [[
-from typing import List, Optional
+  samples.python = [[from typing import List, Optional
 import asyncio
 
 class DataProcessor:
-    def __init__(self, config: dict):
+    def __init__(self, config):
         self.config = config
-        self.results: List[str] = []
+        self.results = []
     
-    async def process_batch(self, items: List[str]) -> Optional[List[str]]:
+    async def process_batch(self, items):
         """Process a batch of items asynchronously."""
         processed = []
         for item in items:
             result = await self._process_item(item)
             if result:
                 processed.append(result)
-        return processed if processed else None
-]],
+        return processed if processed else None]]
 
-    go = [[
-package main
+  samples.go = [[package main
 
 import (
     "context"
@@ -111,11 +103,9 @@ func (s *Service) ProcessUsers(ctx context.Context) error {
         }
     }
     return nil
-}
-]],
+}]]
 
-    rust = [[
-use std::collections::HashMap;
+  samples.rust = [[use std::collections::HashMap;
 use tokio::sync::RwLock;
 use serde::{Deserialize, Serialize};
 
@@ -135,11 +125,9 @@ impl UserCache {
         let cache = self.cache.read().await;
         cache.get(&id).cloned()
     }
-}
-]],
+}]]
 
-    bash = [[
-#!/bin/bash
+  samples.bash = [[#!/bin/bash
 
 # Deployment script with error handling
 set -euo pipefail
@@ -151,25 +139,23 @@ readonly DEPLOY_ENV="${1:-staging}"
 deploy_application() {
     local env="$1"
     
-    echo "Deploying ${APP_NAME} to ${env}..."
+    echo "Deploying $APP_NAME to $env..."
     
-    if [[ ! -f "${SCRIPT_DIR}/config/${env}.env" ]]; then
-        echo "Error: Config file for ${env} not found" >&2
+    if [ ! -f "$SCRIPT_DIR/config/$env.env" ]; then
+        echo "Error: Config file for $env not found" >&2
         return 1
     fi
     
-    source "${SCRIPT_DIR}/config/${env}.env"
+    source "$SCRIPT_DIR/config/$env.env"
     
-    # Build and deploy
-    docker build -t "${APP_NAME}:${env}" .
-    docker-compose -f "docker-compose.${env}.yml" up -d
+    # Build and deploy  
+    docker build -t "$APP_NAME:$env" .
+    docker-compose -f "docker-compose.$env.yml" up -d
 }
 
-deploy_application "${DEPLOY_ENV}"
-]],
+deploy_application "$DEPLOY_ENV"]]
 
-    json = [[
-{
+  samples.json = [[{
   "name": "modern-app",
   "version": "1.0.0",
   "description": "A modern application with TypeScript and React",
@@ -190,9 +176,7 @@ deploy_application "${DEPLOY_ENV}"
     "jest": "^29.0.0",
     "@testing-library/react": "^13.0.0"
   }
-}
-]]
-  }
+}]]
   
   return samples[language] or "# No sample available for " .. language
 end
