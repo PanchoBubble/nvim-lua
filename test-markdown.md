@@ -102,4 +102,32 @@ deploy_app() {
 deploy_app "${1:-staging}" "${2:-myapp}"
 ```
 
+## TOML Configuration Example
+
+```toml
+[package]
+name = "my-rust-app"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A modern Rust application with async support"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+clap = { version = "4.0", features = ["derive"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[[bin]]
+name = "server"
+path = "src/bin/server.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+```
+
 If you can see syntax highlighting for the code inside the code blocks above, then treesitter injection is working correctly!

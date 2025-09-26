@@ -51,6 +51,7 @@ return {
                     "python",
                     "rust",
                     "sql",
+                    "toml",
                     "tsx",
                     "typescript",
                     "vim",

@@ -90,7 +90,7 @@ local function generate_preview_section()
     },
     {
       title = "Data & Config",
-      languages = {'sql', 'yaml', 'markdown'}
+      languages = {'sql', 'yaml', 'toml', 'markdown'}
     }
   }
   
