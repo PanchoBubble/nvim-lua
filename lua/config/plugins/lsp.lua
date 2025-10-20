@@ -74,9 +74,9 @@ return {
             )
 
             require("neodev").setup()
-            local lspconfig = require('lspconfig')
-
-            lspconfig.lua_ls.setup({
+            
+            -- Configure lua_ls using the new vim.lsp.config API
+            vim.lsp.config('lua_ls', {
                 settings = {
                     Lua = {
                         diagnostics = {
@@ -94,6 +94,7 @@ return {
                     },
                 }
             })
+
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
@@ -128,8 +129,9 @@ return {
                     'sqls'
                 },
                 handlers = {
-                    function(server)
-                        lspconfig[server].setup({
+                    function(server_name)
+                        -- Configure the server with capabilities and commands
+                        vim.lsp.config(server_name, {
                             capabilities = lsp_capabilities,
                             commands = {
                                 RenameFile = {
@@ -138,11 +140,21 @@ return {
                                 },
                             }
                         })
+                        -- Enable the server
+                        vim.lsp.enable(server_name)
                     end,
                     ['ts_ls'] = function()
-                        lspconfig.gopls.setup {}
-                        lspconfig.ts_ls.setup({
+                        -- Configure gopls
+                        vim.lsp.config('gopls', {
                             capabilities = lsp_capabilities,
+                        })
+                        vim.lsp.enable('gopls')
+                        
+                        -- Configure ts_ls with custom settings and root pattern
+                        vim.lsp.config('ts_ls', {
+                            capabilities = lsp_capabilities,
+                            root_markers = { "package.json" },
+                            single_file_support = false,
                             settings = {
                                 completions = {
                                     completeFunctionCalls = true
@@ -154,31 +166,21 @@ return {
                                 format = false
                             }
                         })
+                        vim.lsp.enable('ts_ls')
                     end,
                 }
             })
 
-            -- lspconfig.denols.setup {
-            --     root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
-            -- }
-
-            lspconfig.ts_ls.setup {
-                root_dir = lspconfig.util.root_pattern("package.json"),
-                single_file_support = false
-            }
-
-            lspconfig.rust_analyzer.setup {
-                -- Server-specific settings. See `:help lspconfig-setup`
+            -- Configure rust_analyzer
+            vim.lsp.config('rust_analyzer', {
+                capabilities = lsp_capabilities,
                 settings = {
                     ['rust-analyzer'] = {},
                 },
-            }
+            })
 
-            -- lspconfig.htmx.setup({
-            --     filetypes = { "html", "htmldjango" }
-            -- })
-
-            lspconfig.pylsp.setup({
+            -- Configure pylsp with flake8
+            vim.lsp.config('pylsp', {
                 capabilities = lsp_capabilities,
                 configurationSources = { "flake8" },
                 settings = {
@@ -197,6 +199,16 @@ return {
                     },
                 },
             })
+
+            -- Optional: denols configuration (commented out)
+            -- vim.lsp.config('denols', {
+            --     root_markers = { "deno.json", "deno.jsonc" },
+            -- })
+
+            -- Optional: htmx configuration (commented out)
+            -- vim.lsp.config('htmx', {
+            --     filetypes = { "html", "htmldjango" }
+            -- })
 
             require('conform').setup({
                 formatters_by_ft = {
