@@ -96,7 +96,6 @@ export GEMINI_API_KEY="your-gemini-api-key"
 - `<leader>lf` - Go to last file in NvimTree
 
 #### 🔧 Utilities
-- `<C-x>` - Dismiss Noice notifications
 - `<C-c>` - Copy current file path to clipboard
 - `<leader>s` - Source current file
 - `<leader>S` - Toggle Spectre search interface
