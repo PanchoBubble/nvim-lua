@@ -174,6 +174,9 @@ return {
                   includeInlayPropertyDeclarationTypeHints = true,
                   includeInlayFunctionLikeReturnTypeHints = true,
                   includeInlayEnumMemberValueHints = true,
+                  includeCompletionsForModuleExports = true,
+                  quotePreference = "auto",
+                  includePackageJsonAutoImports = "auto",
                 },
               },
               settings = {
