@@ -249,6 +249,9 @@ return {
       --     filetypes = { "html", "htmldjango" }
       -- })
 
+      -- Setup debug utilities
+      require('personal.debug').setup()
+
       require("conform").setup {
         formatters_by_ft = {
           typescript = { "prettier" },
