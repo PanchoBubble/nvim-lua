@@ -1,27 +1,40 @@
 vim.keymap.set("n", "<leader>qf", "<cmd>lua vim.lsp.buf.code_action()<CR>")
 
 local function prettify()
-  vim.lsp.buf.format()
   local filetype = vim.bo.filetype
-
-  local conform_files = { "typescript", "javascript", "scss", "ccs", "html" }
+  
+  -- Use conform for supported file types with LSP fallback
+  local conform_files = { 
+    "typescript", "javascript", "typescriptreact", "javascriptreact", 
+    "scss", "css", "html", "json", "yaml", "markdown" 
+  }
 
   if vim.tbl_contains(conform_files, filetype) then
-    require("conform").format()
+    require("conform").format({
+      lsp_fallback = true,
+      async = false,
+      timeout_ms = 1000,
+    })
     return
   end
-  -- Check if Biome is installed and available
-  if vim.fn.exists ":EslintFixAll" > 0 then
-    vim.cmd "EslintFixAll"
-    -- elseif filetype == "typescript" or filetype == "javascript" then
-    --     -- Call Biome to format the code and apply fixes
-    --     local current_file = vim.api.nvim_buf_get_name(0)
-    --     vim.cmd(
-    --         "!biome check" ..
-    --         current_file
-    --     )
+
+  -- For other file types, try LSP formatting first
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
+  local has_formatter = false
+  
+  for _, client in ipairs(clients) do
+    if client.server_capabilities.documentFormattingProvider then
+      has_formatter = true
+      break
+    end
+  end
+
+  if has_formatter then
+    vim.lsp.buf.format({ async = false, timeout_ms = 1000 })
+  elseif vim.fn.exists(":EslintFixAll") > 0 and (filetype == "typescript" or filetype == "javascript" or filetype == "typescriptreact" or filetype == "javascriptreact") then
+    vim.cmd("EslintFixAll")
   else
-    vim.lsp.buf.format()
+    vim.notify("No formatter available for " .. filetype, vim.log.levels.WARN)
   end
 end
 vim.keymap.set("n", "<leader><leader>", prettify)
