@@ -82,7 +82,7 @@ export GEMINI_API_KEY="your-gemini-api-key"
 
 #### 📝 Code Editing
 - `<leader>rn` - LSP rename with buffer-local keymaps
-- `<leader><leader>` - Format code with multi-tool support (conform.nvim, ESLint, LSP)
+- `<leader><leader>` - Format code with intelligent fallback chain (conform.nvim with LSP fallback, ESLint for JS/TS files)
 - `<leader>qf` - Quick fix/code actions via LSP
 - `<leader>p` / `<leader>d` - Improved paste/delete operations without register overwrite
 - `<leader>y` / `<leader>Y` - Yank to system clipboard
@@ -192,7 +192,7 @@ export GEMINI_API_KEY="your-gemini-api-key"
 - **`lua/config/autocmds.lua`**: LSP buffer setup with key mappings and custom JsonFormat command
 
 #### Plugin Ecosystem
-- **LSP**: Mason-managed servers with conform.nvim formatting and diagnostic optimizations
+- **LSP**: Mason-managed servers with React/TypeScript support, conform.nvim formatting with LSP fallback, and diagnostic optimizations
 - **Completion**: nvim-cmp with multiple sources and Supermaven AI integration
 - **Navigation**: Telescope, NvimTree, Mini.files with Git integration and performance caching
 - **Git**: Custom floating interfaces with AI commit message generation and bulk operations
@@ -247,6 +247,29 @@ Language servers configured in `lua/config/plugins/lsp.lua`:
 ## 📄 License
 
 This project is open source and available under the MIT License.
+
+## 🔧 Troubleshooting
+
+### LSP and Formatting Issues
+
+If you encounter issues with LSP or formatting (especially with React components), use these debug commands:
+
+- `:LspDebug` - Check LSP client attachment and capabilities for current buffer
+- `:FormatDebug` - Show available formatters (conform.nvim, LSP, ESLint) for current buffer  
+- `:FormatTest` - Test formatting with detailed output and error reporting
+
+### Common Issues
+
+**React/TypeScript formatting not working:**
+1. Check that ts_ls is attached: `:LspDebug`
+2. Verify formatting capabilities: `:FormatDebug`
+3. Test formatting: `:FormatTest`
+4. Ensure project has `package.json` or `tsconfig.json` in root
+
+**LSP not attaching:**
+- Check file type is supported: `:set filetype?`
+- Verify root markers exist: `package.json`, `tsconfig.json`, or `.git`
+- Restart LSP: `:LspRestart`
 
 ---
 
