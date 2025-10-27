@@ -27,6 +27,21 @@ vim.api.nvim_create_user_command("JsonFormat", function()
   vim.cmd "%!python -m json.tool"
 end, {})
 
+-- Fix filetype detection for React files
+vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
+  pattern = {"*.tsx", "*.jsx"},
+  callback = function()
+    local buf = vim.api.nvim_get_current_buf()
+    local filetype = vim.bo[buf].filetype
+    
+    if filetype == "typescript.tsx" then
+      vim.bo[buf].filetype = "typescriptreact"
+    elseif filetype == "javascript.jsx" then
+      vim.bo[buf].filetype = "javascriptreact"
+    end
+  end,
+})
+
 local lsp_cmds = vim.api.nvim_create_augroup("lsp_cmds", { clear = true })
 
 vim.api.nvim_create_autocmd("LspAttach", {
