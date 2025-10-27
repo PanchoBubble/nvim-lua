@@ -4,7 +4,7 @@ local function prettify()
   vim.lsp.buf.format()
   local filetype = vim.bo.filetype
 
-  local conform_files = { "typescript", "javascript", "json", "scss", "ccs", "html" }
+  local conform_files = { "typescript", "javascript", "scss", "ccs", "html" }
 
   if vim.tbl_contains(conform_files, filetype) then
     require("conform").format()

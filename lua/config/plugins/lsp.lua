@@ -122,6 +122,7 @@ return {
           -- 'denols',
           "cssls",
           "sqls",
+          "jsonls",
         },
         handlers = {
           function(server_name)
@@ -138,6 +139,19 @@ return {
             -- Enable the server
             vim.lsp.enable(server_name)
           end,
+          ["jsonls"] = function()
+            vim.lsp.config("jsonls", {
+              capabilities = lsp_capabilities,
+              settings = {
+                json = {
+                  format = {
+                    tabSize = 2,
+                  },
+                },
+              },
+            })
+            vim.lsp.enable("jsonls")
+          end,
           ["ts_ls"] = function()
             -- Configure gopls
             vim.lsp.config("gopls", {
@@ -145,12 +159,43 @@ return {
             })
             vim.lsp.enable "gopls"
 
-            -- Configure ts_ls with custom settings and root pattern
+            -- Configure ts_ls with React support and formatting capabilities
             vim.lsp.config("ts_ls", {
               capabilities = lsp_capabilities,
-              root_markers = { "package.json" },
+              filetypes = { "typescript", "javascript", "typescriptreact", "javascriptreact" },
+              root_markers = { "package.json", "tsconfig.json", ".git" },
               single_file_support = false,
+              init_options = {
+                preferences = {
+                  includeInlayParameterNameHints = "all",
+                  includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                  includeInlayFunctionParameterTypeHints = true,
+                  includeInlayVariableTypeHints = true,
+                  includeInlayPropertyDeclarationTypeHints = true,
+                  includeInlayFunctionLikeReturnTypeHints = true,
+                  includeInlayEnumMemberValueHints = true,
+                },
+              },
               settings = {
+                typescript = {
+                  format = {
+                    enable = true,
+                  },
+                  inlayHints = {
+                    includeInlayParameterNameHints = "all",
+                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                    includeInlayFunctionParameterTypeHints = true,
+                    includeInlayVariableTypeHints = true,
+                    includeInlayPropertyDeclarationTypeHints = true,
+                    includeInlayFunctionLikeReturnTypeHints = true,
+                    includeInlayEnumMemberValueHints = true,
+                  },
+                },
+                javascript = {
+                  format = {
+                    enable = true,
+                  },
+                },
                 completions = {
                   completeFunctionCalls = true,
                 },
@@ -158,7 +203,6 @@ return {
                   enable = true,
                   mode = "all",
                 },
-                format = false,
               },
             })
             vim.lsp.enable "ts_ls"
@@ -211,6 +255,8 @@ return {
           typescriptreact = { "prettier" },
           javascript = { "prettier" },
           javascriptreact = { "prettier" },
+          json = { "prettier" },
+          jsonc = { "prettier" },
           -- mustache = { 'djlint' }
         },
       }
