@@ -257,13 +257,35 @@ return {
 
       require("conform").setup {
         formatters_by_ft = {
-          typescript = { "prettier" },
-          typescriptreact = { "prettier" },
-          javascript = { "prettier" },
-          javascriptreact = { "prettier" },
-          json = { "prettier" },
-          jsonc = { "prettier" },
-          -- mustache = { 'djlint' }
+          -- Use prettierd for faster formatting
+          typescript = { "prettierd", "prettier" },
+          typescriptreact = { "prettierd", "prettier" },
+          javascript = { "prettierd", "prettier" },
+          javascriptreact = { "prettierd", "prettier" },
+          json = { "prettierd", "prettier" },
+          jsonc = { "prettierd", "prettier" },
+          css = { "prettierd", "prettier" },
+          scss = { "prettierd", "prettier" },
+          html = { "prettierd", "prettier" },
+          yaml = { "prettierd", "prettier" },
+          markdown = { "prettierd", "prettier" },
+        },
+        -- Disable format_on_save to avoid conflicts, use manual formatting only
+        format_on_save = false,
+        -- Set default format options
+        default_format_opts = {
+          timeout_ms = 3000,
+          async = false,
+          quiet = false,
+          lsp_fallback = false,  -- Explicitly disable LSP fallback to prevent conflicts
+        },
+        -- Configure prettierd for performance
+        formatters = {
+          prettierd = {
+            env = {
+              string.format("PRETTIERD_DEFAULT_CONFIG=%s", vim.fn.expand("~/.config/nvim/prettier.config.js") or ""),
+            },
+          },
         },
       }
     end,
