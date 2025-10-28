@@ -159,7 +159,7 @@ return {
             })
             vim.lsp.enable "gopls"
 
-            -- Configure ts_ls with React support and formatting capabilities
+            -- Configure ts_ls with React support, formatting disabled for performance
             vim.lsp.config("ts_ls", {
               capabilities = lsp_capabilities,
               filetypes = { "typescript", "javascript", "typescriptreact", "javascriptreact" },
@@ -167,13 +167,6 @@ return {
               single_file_support = false,
               init_options = {
                 preferences = {
-                  includeInlayParameterNameHints = "all",
-                  includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-                  includeInlayFunctionParameterTypeHints = true,
-                  includeInlayVariableTypeHints = true,
-                  includeInlayPropertyDeclarationTypeHints = true,
-                  includeInlayFunctionLikeReturnTypeHints = true,
-                  includeInlayEnumMemberValueHints = true,
                   includeCompletionsForModuleExports = true,
                   quotePreference = "auto",
                   includePackageJsonAutoImports = "auto",
@@ -181,32 +174,39 @@ return {
               },
               settings = {
                 typescript = {
+                  -- Disable formatting to prevent conflicts with conform.nvim
                   format = {
-                    enable = true,
+                    enable = false,
                   },
+                  -- Minimal inlay hints for performance
                   inlayHints = {
-                    includeInlayParameterNameHints = "all",
-                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-                    includeInlayFunctionParameterTypeHints = true,
-                    includeInlayVariableTypeHints = true,
-                    includeInlayPropertyDeclarationTypeHints = true,
-                    includeInlayFunctionLikeReturnTypeHints = true,
-                    includeInlayEnumMemberValueHints = true,
+                    includeInlayParameterNameHints = "literals",
+                    includeInlayFunctionParameterTypeHints = false,
+                    includeInlayVariableTypeHints = false,
+                    includeInlayPropertyDeclarationTypeHints = false,
+                    includeInlayFunctionLikeReturnTypeHints = false,
+                    includeInlayEnumMemberValueHints = false,
                   },
                 },
                 javascript = {
                   format = {
-                    enable = true,
+                    enable = false,
                   },
                 },
                 completions = {
                   completeFunctionCalls = true,
                 },
+                -- Disable code actions on save for performance
                 codeActionOnSave = {
-                  enable = true,
-                  mode = "all",
+                  enable = false,
                 },
               },
+              -- Override server capabilities to disable formatting
+              on_attach = function(client, bufnr)
+                -- Disable formatting capabilities to prevent conflicts
+                client.server_capabilities.documentFormattingProvider = false
+                client.server_capabilities.documentRangeFormattingProvider = false
+              end,
             })
             vim.lsp.enable "ts_ls"
           end,
