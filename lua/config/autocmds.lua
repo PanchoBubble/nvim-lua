@@ -60,7 +60,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
     -- bufmap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<cr>')
     bufmap("n", "gs", "<cmd>lua vim.lsp.buf.signature_help()<cr>")
     bufmap("n", "<leader>rn", "<cmd>lua vim.lsp.buf.rename()<cr>")
-    bufmap({ "n", "x" }, "<F3>", "<cmd>lua vim.lsp.buf.format({async = true})<cr>")
+    -- Removed F3 LSP formatting to prevent conflicts with <leader><leader> conform.nvim formatting
     bufmap("n", "<F4>", "<cmd>lua vim.lsp.buf.code_action()<cr>")
     bufmap("n", "gl", "<cmd>lua vim.diagnostic.open_float()<cr>")
     bufmap("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<cr>")
