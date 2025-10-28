@@ -82,7 +82,7 @@ export GEMINI_API_KEY="your-gemini-api-key"
 
 #### 📝 Code Editing
 - `<leader>rn` - LSP rename with buffer-local keymaps
-- `<leader><leader>` - Format code with intelligent fallback chain (conform.nvim with LSP fallback, ESLint for JS/TS files)
+- `<leader><leader>` - Format code with conflict-free approach (conform.nvim with prettierd for web languages, LSP for others)
 - `<leader>qf` - Quick fix/code actions via LSP
 - `<leader>p` / `<leader>d` - Improved paste/delete operations without register overwrite
 - `<leader>y` / `<leader>Y` - Yank to system clipboard
@@ -192,7 +192,7 @@ export GEMINI_API_KEY="your-gemini-api-key"
 - **`lua/config/autocmds.lua`**: LSP buffer setup with key mappings and custom JsonFormat command
 
 #### Plugin Ecosystem
-- **LSP**: Mason-managed servers with React/TypeScript support, conform.nvim formatting with LSP fallback, and diagnostic optimizations
+- **LSP**: Mason-managed servers with React/TypeScript support, optimized ts_ls with formatting disabled for performance, conform.nvim for web language formatting
 - **Completion**: nvim-cmp with multiple sources and Supermaven AI integration
 - **Navigation**: Telescope, NvimTree, Mini.files with Git integration and performance caching
 - **Git**: Custom floating interfaces with AI commit message generation and bulk operations
@@ -255,10 +255,18 @@ This project is open source and available under the MIT License.
 If you encounter issues with LSP or formatting (especially with React components), use these debug commands:
 
 - `:LspDebug` - Check LSP client attachment and capabilities for current buffer
-- `:FormatDebug` - Show available formatters (conform.nvim, LSP, ESLint) for current buffer  
+- `:FormatDebug` - Show available formatters and detect conflicts between LSP and conform.nvim
 - `:FormatTest` - Test formatting with detailed output and error reporting
+- `:FormatPerf` - Test formatting performance and detect character corruption patterns
+- `:CursorDebug` - Test what LSP sees under the cursor
 
 ### Common Issues
+
+**Formatting character deletion/corruption:**
+1. Check for conflicts: `:FormatDebug`
+2. Verify no LSP fallback enabled: Should show "LSP fallback is DISABLED"
+3. Test performance: `:FormatPerf` - slow formatting may indicate daemon issues
+4. Ensure using prettierd: Check that formatters show "prettierd" first in list
 
 **React/TypeScript formatting not working:**
 1. Check that ts_ls is attached: `:LspDebug`
