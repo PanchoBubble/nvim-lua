@@ -37,6 +37,37 @@ local function prettify()
 end
 vim.keymap.set("n", "<leader><leader>", prettify)
 
+-- Create Format command that does ESLint autofix + Prettier
+vim.api.nvim_create_user_command("Format", function()
+  local filetype = vim.bo.filetype
+  local filepath = vim.api.nvim_buf_get_name(0)
+  
+  local conform_files = { 
+    "typescript", "javascript", "typescriptreact", "javascriptreact", 
+    "scss", "css", "html", "json", "yaml", "markdown" 
+  }
+
+  if vim.tbl_contains(conform_files, filetype) and filepath ~= "" then
+    -- First fix ESLint issues (imports, etc.)
+    vim.cmd("silent !cd " .. vim.fn.getcwd() .. " && pnpm exec eslint " .. vim.fn.shellescape(filepath) .. " --fix")
+    vim.cmd("checktime") -- Reload file to show changes
+    
+    -- Then format with prettier
+    vim.defer_fn(function()
+      require("conform").format({
+        async = true,
+        timeout_ms = 2000,
+        lsp_fallback = false,
+      })
+    end, 200)
+  else
+    -- Fallback to regular formatting
+    prettify()
+  end
+end, { desc = "ESLint autofix + format" })
+
+
+
 -- Blammer
 vim.keymap.set("n", "<leader>go", "<cmd>GitBlameOpenCommitURL<cr>")
 -- Beautify

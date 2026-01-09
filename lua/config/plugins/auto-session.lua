@@ -7,7 +7,14 @@ return {
         auto_session_last_session_dir = vim.fn.stdpath "data" .. "/sessions/",
         auto_session_root_dir = vim.fn.stdpath "data" .. "/sessions/",
         auto_session_enable_last_session = vim.loop.cwd() == vim.loop.os_homedir(),
-        post_restore_cmds = { "NvimTreeFindFile" },
+        post_restore_cmds = { 
+          function()
+            -- Safely execute NvimTreeFindFile only if NvimTree is available
+            if vim.fn.exists(':NvimTreeFindFile') == 2 then
+              vim.cmd('NvimTreeFindFile')
+            end
+          end 
+        },
         pre_save_cmds = { "NvimTreeClose" },
         log_level = "warn",
         auto_session_enabled = true,

@@ -121,11 +121,14 @@ return {
           "html",
           -- 'denols',
           "cssls",
-          "sqls",
           "jsonls",
         },
         handlers = {
           function(server_name)
+            -- Skip sqls to prevent database connection errors
+            if server_name == "sqls" then
+              return
+            end
             -- Configure the server with capabilities and commands
             vim.lsp.config(server_name, {
               capabilities = lsp_capabilities,
